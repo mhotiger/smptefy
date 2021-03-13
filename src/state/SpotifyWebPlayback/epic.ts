@@ -10,7 +10,7 @@ import { pauseMidiAction, setMidiClockMsAction, setMidiPlayStateAction } from "s
 import { requestErrorStrategy, retryStrategy } from "state/strategies";
 import { getAuthToken } from "utils/auth";
 import { setSpotifyPlaybackState, spotifyPauseAction, spotifyPlayAction } from "./actions";
-import { SPOTIFY_PLAY_TRACK, SpotifyPlayTrackAction, SPOTIFY_STATE_CHANGED, SpotifyStateChangedAction, SPOTIFY_PLAY, SPOTIFY_PAUSE, SPOTIFY_TOGGLE_PLAYBACK, SPOTIFY_SEEK, SpotifySeekAction } from "./types";
+import { SPOTIFY_PLAY_TRACK, SpotifyPlayTrackAction, SPOTIFY_STATE_CHANGED, SpotifyStateChangedAction, SPOTIFY_PLAY, SPOTIFY_PAUSE, SPOTIFY_TOGGLE_PLAYBACK, SPOTIFY_SEEK, SpotifySeekAction, PlaybackState } from "./types";
  
 export const spotifyPlayTrackEpic: Epic<AllActions, AllActions, RootState, void> = (action$, state$)=>{
     return action$.pipe(
@@ -68,11 +68,11 @@ export const spotifyStateChangedEpic: Epic<AllActions,AllActions, RootState, voi
             }
             //const playbackPos = action.playbackState.position +(Date.now()-action.playbackState.timestamp)
             return interval(100).pipe(
-                switchMap(()=>{
-                    return state$.value.spotify.player!.getCurrentState()
-                    
+                switchMap(async ()=>{
+                    const playbackState = await state$.value.spotify.player!.getCurrentState(); 
+                    return {...playbackState} as PlaybackState;                  
                 }),
-                switchMap((state:Spotify.PlaybackState | null)=>{
+                switchMap((state: PlaybackState | null)=>{
                     if(state){  
                         const timediff = Date.now()- state.timestamp;
                         // console.log("state from the interval", state)   
