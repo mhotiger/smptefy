@@ -1,7 +1,10 @@
 import * as functions from "firebase-functions";
 import express from 'express'
-import cors from 'cors';
+import cors from 'cors'
 import SpotifyWebApi  from 'spotify-web-api-node'
+import cookieParser from 'cookie-parser'
+import str from '@supercharge/strings'
+
 
 const app = express();
 
@@ -10,22 +13,32 @@ const Spotify = new SpotifyWebApi({
   clientSecret: functions.config().spotify.client_secret,
 })
 
+const OAUTH_SCOPES = [
+            'user-read-email',
+            'user-read-private',
+            'streaming',
+            'playlist-read-private',
+            'playlist-read-collaborative',
+            
+            'user-read-playback-state',
+            'user-modify-playback-state',
+            'user-read-currently-playing',
+            'user-read-playback-position',
+        ];
+
 app.use(cors());
-
-
-
-
-app.get('/helloworld', (req, res)=>{
-  res.send('hello world\n');
-  
-});
-
-app.get('/hellofresh',(req, res)=>{
-  res.send(`proj: ${process.env.GCLOUD_PROJECT}`)
-})
+app.use(cookieParser());
 
 app.get('/', (req, res)=>{
   res.send("HOME PAGE")
+})
+
+app.get('/redirect', (req,res)=>{
+  const state:string = req.cookies.state || str.random(20);
+  functions.logger.info("State verification: ", state);  
+  res.cookie('state', state,{maxAge:3600000, secure: true, httpOnly:true});
+  const authorizeUrl = Spotify.createAuthorizeURL(OAUTH_SCOPES,state);
+  res.redirect(authorizeUrl);
 })
 
 

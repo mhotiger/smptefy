@@ -7,7 +7,10 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2017",
-    "typeRoots": ["./functions/node_modules/@types"]
+    "typeRoots": ["./functions/node_modules/@types"],
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "esModuleInterop": true
   },
   "compileOnSave": true,
   "include": [
