@@ -1,14 +1,32 @@
 import * as functions from "firebase-functions";
+import express from 'express'
+import cors from 'cors';
+import SpotifyWebApi  from 'spotify-web-api-node'
 
-// // Start writing Firebase Functions
-// // https://firebase.google.com/docs/functions/typescript
-//
-export const helloWorld = functions.https.onRequest((request, response) => {
-  functions.logger.info("Hello logs!", {structuredData: true});
-  response.send("Hello from Firebase!");
+const app = express();
+
+const Spotify = new SpotifyWebApi({
+  clientId: functions.config().spotify.client_id,
+  clientSecret: functions.config().spotify.client_secret,
+})
+
+app.use(cors());
+
+
+
+
+app.get('/helloworld', (req, res)=>{
+  res.send('hello world\n');
+  
 });
 
-export const helloFresh = functions.https.onRequest((request, response)=>{
-  functions.logger.log("invoking hellofresh: ", Date.now());
-  response.send("hellofrsh");
-});
+app.get('/hellofresh',(req, res)=>{
+  res.send(`proj: ${process.env.GCLOUD_PROJECT}`)
+})
+
+app.get('/', (req, res)=>{
+  res.send("HOME PAGE")
+})
+
+
+exports.auth = functions.https.onRequest(app);
