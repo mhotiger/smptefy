@@ -16,7 +16,7 @@ export const Login: React.FC<LoginProps> = () => {
                     m="2em" 
                     p="1em" 
                     onClick={()=>window.location.assign("/auth/spotify")}>
-                        logging in with the spotify
+                        log in with spotify
                 </Button>
                 </Flex>
             </Box>            
