@@ -4,15 +4,38 @@ import cors from 'cors'
 import SpotifyWebApi  from 'spotify-web-api-node'
 import cookieParser from 'cookie-parser'
 import str from '@supercharge/strings'
-import bodyParser from 'body-parser';
+
+
+import admin from 'firebase-admin';
+import serviceAccount from './smptefy-firebase-adminsdk-4bpl5-164b310110.json'
+
+
+const params = {
+  type: serviceAccount.type,
+  projectId: serviceAccount.project_id,
+  privateKeyId: serviceAccount.private_key_id,
+  privateKey: serviceAccount.private_key,
+  clientEmail: serviceAccount.client_email,
+  clientId: serviceAccount.client_id,
+  authUri: serviceAccount.auth_uri,
+  tokenUri: serviceAccount.token_uri,
+  authProviderX509CertUrl: serviceAccount.auth_provider_x509_cert_url,
+  clientC509CertUrl: serviceAccount.client_x509_cert_url
+}
+
+admin.initializeApp({
+  credential: admin.credential.cert(params),
+  databaseURL:`https://${process.env.GCP_PROJECT}.firebaseio.com`
+})
 
 
 const app = express();
 
-// const Spotify = new SpotifyWebApi({
-//   clientId: functions.config().spotify!.client_id,
-//   clientSecret: functions.config().spotify!.client_secret,
-// })
+const Spotify = new SpotifyWebApi({
+  clientId: functions.config().spotify!.client_id,
+  clientSecret: functions.config().spotify!.client_secret,
+  redirectUri: (functions.config().env.prod==="true")?`https://${process.env.GCP_PROJECT}.web.app/auth`:`http://localhost:5000/auth`
+})
 
 const OAUTH_SCOPES = [
             'user-read-email',
@@ -29,27 +52,84 @@ const OAUTH_SCOPES = [
 
 app.use(cors());
 app.use(cookieParser());
-app.use(bodyParser.urlencoded());
+
 
 app.get('/', (req, res)=>{
-  res.send("HOME PAGE")
+  res.send(`prod: ${functions.config().env.prod}`)
 })
 
 app.get('/redirect', (req,res)=>{
   const state:string = req.cookies.state || str.random(20);
   functions.logger.info("State verification: ", state);  
   res.cookie('state', state,{maxAge:3600000, secure: true, httpOnly:true});
-  // const authorizeUrl = Spotify.createAuthorizeURL(OAUTH_SCOPES,state);
-  // res.redirect(authorizeUrl);
-  res.send(`config: ${JSON.stringify(functions.config().spotify)}`)
+  const authorizeUrl = Spotify.createAuthorizeURL(OAUTH_SCOPES,state);
+  res.redirect(authorizeUrl);
 })
 
-app.get('/token', (req, res)=>{
-  const code = req.query.code;
-  const state = req.query.state;
-  res.send(`Code: ${code}\n State: ${state}`);
+app.get('/token', async (req, res)=>{
+  try{
+    if(!req.cookies.state){
+      functions.logger.error("No state cookie attached");
+      throw new Error("State cookie not set or expired.");
+    }else if(req.cookies.state !== req.query.state){
+      functions.logger.error("State cookie does not match the query param");
+      throw new Error("State cookie not valid");
+    }
+    Spotify.authorizationCodeGrant(req.query.code as string, (error, data)=>{
+      if(error){
+        throw error;
+      }
+      Spotify.setAccessToken(data.body.access_token);
+      Spotify.getMe(async( error, userResult)=>{
+        if(error){
+          throw error;
+        }
+        const {id, display_name, email} = userResult.body;
+        const profile_pic = (userResult.body.images)? userResult.body.images[0].url: undefined;
+        const firebase_token = await createFirebaseAccount(id,display_name!,profile_pic!,email,data.body.access_token);
+        
+        res.json({
+          firebase_token,
+          access_token: data.body.access_token,
+        })
+      })
+    });
+    
+  }
+  catch(err){
+    res.json({error: err.message});
+  }
 
 })
+
+
+const createFirebaseAccount = async (spotify_id:string, display_name:string, profile_image:string, email:string, access_token:string): Promise<string>=>{
+
+    const uid = `spotify:${spotify_id}`;
+    const databaseWrite = admin.database().ref(`/spotifyAccessToken/${uid}`).set(access_token);
+    const userCreate = admin.auth().updateUser(uid,{
+      displayName:display_name,
+      photoURL: profile_image,
+      email: email,
+      emailVerified: true,
+    }).catch((err)=>{
+      if(err.code === 'auth/user-not-found'){
+        return admin.auth().createUser({
+          uid: uid,
+          displayName: display_name,
+          photoURL: profile_image,
+          email: email,
+          emailVerified: true,
+        });
+      }
+      throw err;
+    })
+
+    await Promise.all([userCreate,databaseWrite]);
+    const firebaseToken = admin.auth().createCustomToken(uid);
+
+    return firebaseToken;
+}
 
 
 exports.auth = functions.https.onRequest(app);
