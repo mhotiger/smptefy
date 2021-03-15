@@ -23,6 +23,8 @@ yarn-debug.log*
 yarn-error.log*
 ui-debug.log*
 firebase-debug.log*
+firestore-degug.log*
+database-debug.log*
 
 .runtimeconfig.json*
 smptefy-firebase-adminsdk*
