@@ -28,7 +28,7 @@ ReactDOM.render(
 	<React.StrictMode>
 		<Provider store={store}>
 			<ReactReduxFirebaseProvider {...rrfProps}>
-				<ColorModeScript initialColorMode='dark' />
+				<ColorModeScript />
 				<App />
 			</ReactReduxFirebaseProvider>
 		</Provider>

@@ -1,5 +1,5 @@
 import * as functions from "firebase-functions";
-import express from 'express'
+import express, { response } from 'express'
 import cors from 'cors'
 import SpotifyWebApi  from 'spotify-web-api-node'
 import cookieParser from 'cookie-parser'
@@ -25,7 +25,7 @@ const params = {
 
 admin.initializeApp({
   credential: admin.credential.cert(params),
-  databaseURL:`https://${process.env.GCP_PROJECT}.firebaseio.com`
+  databaseURL:`https://smptefy.firebaseio.com`
 })
 
 
@@ -34,7 +34,8 @@ const app = express();
 const Spotify = new SpotifyWebApi({
   clientId: functions.config().spotify!.client_id,
   clientSecret: functions.config().spotify!.client_secret,
-  redirectUri: (functions.config().env.prod==="true")?`https://${process.env.GCP_PROJECT}.web.app/auth`:`http://localhost:5000/auth`
+  redirectUri: (functions.config().env.prod==="true")?`https://${process.env.GCP_PROJECT}.web.app/loginauth`:`http://localhost:3000/loginauth`,
+  
 })
 
 const OAUTH_SCOPES = [
@@ -50,7 +51,10 @@ const OAUTH_SCOPES = [
             'user-read-playback-position',
         ];
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true,
+}));
 app.use(cookieParser());
 
 
@@ -62,19 +66,13 @@ app.get('/redirect', (req,res)=>{
   const state:string = req.cookies.state || str.random(20);
   functions.logger.info("State verification: ", state);  
   res.cookie('state', state,{maxAge:3600000, secure: true, httpOnly:true});
-  const authorizeUrl = Spotify.createAuthorizeURL(OAUTH_SCOPES,state);
+  const authorizeUrl = Spotify.createAuthorizeURL(OAUTH_SCOPES,state,true);
   res.redirect(authorizeUrl);
 })
 
 app.get('/token', async (req, res)=>{
   try{
-    if(!req.cookies.state){
-      functions.logger.error("No state cookie attached");
-      throw new Error("State cookie not set or expired.");
-    }else if(req.cookies.state !== req.query.state){
-      functions.logger.error("State cookie does not match the query param");
-      throw new Error("State cookie not valid");
-    }
+    
     Spotify.authorizationCodeGrant(req.query.code as string, (error, data)=>{
       if(error){
         throw error;
@@ -113,6 +111,7 @@ const createFirebaseAccount = async (spotify_id:string, display_name:string, pro
       email: email,
       emailVerified: true,
     }).catch((err)=>{
+      console.log('Update user failed')
       if(err.code === 'auth/user-not-found'){
         return admin.auth().createUser({
           uid: uid,
@@ -125,7 +124,9 @@ const createFirebaseAccount = async (spotify_id:string, display_name:string, pro
       throw err;
     })
 
-    await Promise.all([userCreate,databaseWrite]);
+    await Promise.all([userCreate,databaseWrite]).catch((err)=>{
+      throw err;
+    });
     const firebaseToken = admin.auth().createCustomToken(uid);
 
     return firebaseToken;
