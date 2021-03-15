@@ -1,5 +1,6 @@
 import * as React from "react"
 import {
+  Box,
   ChakraProvider,
   theme,
 } from "@chakra-ui/react"
@@ -12,12 +13,18 @@ import Login from "components/Login"
 import { ErrorMessages } from "components/ErrorMessages"
 import { initMidiAction } from "state/MidiPlayer/actions"
 import { setSpotifyReadyAction } from "state/SpotifyWebPlayback/actions"
+import { isLoaded, useFirebase, isEmpty } from "react-redux-firebase"
+import {BrowserRouter, Route} from 'react-router-dom';
+import { Loading } from "containers/Loading"
+import { Auth } from "components/Auth"
+
 
 export const App = () =>{
 
-  const user = useSelector((state: RootState) => state.user.userProfile)
+  const firebase = useFirebase();
+  
+  const auth = useSelector((state: RootState) => state.firebase.auth)
   const dispatch = useDispatch()
-
 
   window.onSpotifyWebPlaybackSDKReady = ()=>{
     console.log("spotify ready")
@@ -29,23 +36,23 @@ export const App = () =>{
     
   },[dispatch])
 
-  if(!user){
-    dispatch(fetchUser())
+
+  var rootComponent;
+  //loading user
+  if(!isLoaded(auth)){
+    rootComponent = Loading
+  }else if(!isEmpty(auth)){
+
+    rootComponent = Layout 
+
+  }else{
+    rootComponent = Login
   }
-  if(user){
-    return (
-      <ChakraProvider theme={theme}>
-        <Layout/>
-        <ErrorMessages/>
-      </ChakraProvider>
-    )
-  }
-  else{
-    return(
-    <ChakraProvider theme={theme}>
-      <Login/>
-      
-    </ChakraProvider>
-    )
-  }
+
+  return(
+    <BrowserRouter>
+      <Route path='/' component={rootComponent}></Route>
+      <Route path='/auth' component={Auth}></Route>
+    </BrowserRouter>
+  )
 }
