@@ -1,4 +1,4 @@
-import { INIT_SPOTIFY, SET_SPOTIFY_DEVICE_ID, SET_SPOTIFY_PLAYBACK_STATE, SET_SPOTIFY_READY, SpotifyPlayerAction, SpotifyPlayerState, SPOTIFY_PLAYBACK_READY, SPOTIFY_SEEK } from "./types";
+import { INIT_SPOTIFY, PlaybackState, SET_SPOTIFY_DEVICE_ID, SET_SPOTIFY_PLAYBACK_STATE, SET_SPOTIFY_READY, SpotifyPlayerAction, SpotifyPlayerState, SPOTIFY_PLAYBACK_READY, SPOTIFY_SEEK } from "./types";
 import produce from 'immer'
 import { getAuthToken } from "utils/auth";
 import { setError } from "state/Error/action";
@@ -34,7 +34,7 @@ export const spotifyPlayerReducer = produce((state: SpotifyPlayerState, action: 
             state.player.addListener('player_state_changed', player_state => { 
                 
                 //action.dispatch(setError({msg: `Playback State Changed`}))
-                action.dispatch(spotifyStateChangedAction(player_state))
+                action.dispatch(spotifyStateChangedAction({...player_state} as PlaybackState))
                 
             });
 

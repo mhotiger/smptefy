@@ -1,5 +1,5 @@
 import { Dispatch } from "redux";
-import { INIT_SPOTIFY, SET_SPOTIFY_DEVICE_ID, SET_SPOTIFY_PLAYBACK_STATE, SET_SPOTIFY_PLAYER, SET_SPOTIFY_READY, SpotifyPlayerAction, SPOTIFY_PAUSE, SPOTIFY_PLAY, SPOTIFY_PLAYBACK_READY, SPOTIFY_PLAY_TRACK, SPOTIFY_SEEK, SPOTIFY_STATE_CHANGED, SPOTIFY_TOGGLE_PLAYBACK } from "./types";
+import { INIT_SPOTIFY, PlaybackState, SET_SPOTIFY_DEVICE_ID, SET_SPOTIFY_PLAYBACK_STATE, SET_SPOTIFY_PLAYER, SET_SPOTIFY_READY, SpotifyPlayerAction, SPOTIFY_PAUSE, SPOTIFY_PLAY, SPOTIFY_PLAYBACK_READY, SPOTIFY_PLAY_TRACK, SPOTIFY_SEEK, SPOTIFY_STATE_CHANGED, SPOTIFY_TOGGLE_PLAYBACK } from "./types";
 
 
 export const initSpotifyAction = (dispatch: Dispatch<any>):SpotifyPlayerAction=>{
@@ -34,7 +34,7 @@ export const setSpotifyDeviceIdAction = (device_id: string | undefined): Spotify
     }
 }
 
-export const setSpotifyPlaybackState = (playbackState: Spotify.PlaybackState): SpotifyPlayerAction =>{
+export const setSpotifyPlaybackState = (playbackState: PlaybackState): SpotifyPlayerAction =>{
     return{
         type: SET_SPOTIFY_PLAYBACK_STATE,
         playbackState
@@ -73,7 +73,7 @@ export const spotifyTogglePlaybackAction = ():SpotifyPlayerAction=>{
     }
 }
 
-export const spotifyStateChangedAction = (playbackState: Spotify.PlaybackState):SpotifyPlayerAction =>{
+export const spotifyStateChangedAction = (playbackState: PlaybackState):SpotifyPlayerAction =>{
     return{
         type: SPOTIFY_STATE_CHANGED,
         playbackState

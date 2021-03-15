@@ -14,10 +14,13 @@ export const SPOTIFY_TOGGLE_PLAYBACK = 'SPOTIFY_TOGGLE_PLAYBACK'
 export const SPOTIFY_STATE_CHANGED = 'SPOTIFY_STATE_CHANGED'
 export const SPOTIFY_SEEK = 'SPOTIFY_SEEK'
 
+export interface PlaybackState extends Spotify.PlaybackState{
+    timestamp:number;
+}
 
 export interface SpotifyPlayerState{
     player?: Spotify.SpotifyPlayer,
-    playbackState?: Spotify.PlaybackState,
+    playbackState?: PlaybackState,
     playbackPos$: BehaviorSubject<number>,
     paused$: BehaviorSubject<boolean>,
     isReadyToInit: boolean,
@@ -46,7 +49,7 @@ export interface SetSpotifyReadyInitAction{
 
 export interface SetSpotifyPlayBackStateAction{
     type: typeof SET_SPOTIFY_PLAYBACK_STATE
-    playbackState: Spotify.PlaybackState
+    playbackState: PlaybackState
 }
 
 export interface SetSpotifyDeviceId{
@@ -78,7 +81,7 @@ export interface SpotifyTogglePlaybackAction{
 
 export interface SpotifyStateChangedAction{
     type: typeof SPOTIFY_STATE_CHANGED,
-    playbackState: Spotify.PlaybackState
+    playbackState: PlaybackState
 }
 
 export interface SpotifySeekAction{
