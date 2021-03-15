@@ -2,7 +2,6 @@ import { Loading } from 'containers/Loading';
 import React, { useEffect, useState } from 'react';
 import { Redirect, RouteComponentProps } from 'react-router';
 import queryString from 'query-string';
-import { repeatWhen } from 'rxjs/operators';
 
 interface AuthProps extends RouteComponentProps {}
 
@@ -13,7 +12,7 @@ export const Auth: React.FC<AuthProps> = ({ location }) => {
 
 	const fetchToken = async () => {
 		const resp = await fetch(
-			`localhost:5000/smptefy/auth/token?code=${code}`,
+			`localhost:5001/smptefy/us-central1/auth/token?code=${code}`,
 			{
 				credentials: 'include',
 				headers: {

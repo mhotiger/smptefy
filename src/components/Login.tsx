@@ -19,7 +19,7 @@ export const Login: React.FC<LoginProps> = () => {
 					p='1em'
 					onClick={() =>
 						window.location.assign(
-							'localhost:5000/smptefy/auth/redirect'
+							'localhost:5001/smptefy/us-central1/auth/redirect'
 						)
 					}>
 					log in with spotify
