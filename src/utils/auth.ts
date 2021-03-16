@@ -1,35 +1,39 @@
-import { TokenResponse } from "state/User/types";
 
 
-let authToken = "";
-// let needsRefresh = false;
-// let refreshTimeout: NodeJS.Timeout;
-let timeForRefresh: number;
+
+let auth_token = "";
+let refresh_token = "";
 
 
-export const  getAuthToken =  () =>{
-    // if(Date.now() > timeForRefresh){
 
-    //     //refresh the token
-    //     await refresh();
-    //     return authToken;
-    // }
-    return authToken;
+export const  getAuthToken =  ():string =>{
+
+    return auth_token;
+}
+
+export const getRefreshToken = (): string=>{
+    return refresh_token
 }
 
 export const setAuthToken = (token: string) =>{
-    authToken = (token)? token: "";
+    auth_token = (token)? token: "";
+}
+
+export const setRefreshToken = (token:string)=>{
+    refresh_token = (token)?token: "";
 }
 
 export const refresh = async()=>{
-    const resp = await fetch('/auth/refresh');
+    const resp = await fetch('http://localhost:5001/smptefy/us-central1/auth/refresh',{
+        body: refresh_token,
+        method:"POST"
+    });
     const data = await resp.json()
     console.log("refresh:", data);
     
     if(data.access_token){
-        authToken = data.access_token;
-        // needsRefresh = false;
-        timeForRefresh = Date.now() + data.expires_in;
+        auth_token = data.access_token;
+        
         return
         
     }else if(data.error){

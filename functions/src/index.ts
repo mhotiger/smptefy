@@ -57,6 +57,7 @@ app.use(cors({
   credentials: true,
 }));
 app.use(cookieParser());
+app.use(express.json());
 
 
 app.get('/', (req, res)=>{
@@ -79,6 +80,7 @@ app.get('/token', async (req, res)=>{
         throw error;
       }
       Spotify.setAccessToken(data.body.access_token);
+      Spotify.setRefreshToken(data.body.refresh_token);
       Spotify.getMe(async( error, userResult)=>{
         if(error){
           throw error;
@@ -90,6 +92,7 @@ app.get('/token', async (req, res)=>{
         res.json({
           firebase_token,
           access_token: data.body.access_token,
+          refresh_token: data.body.refresh_token,
           profile:{
             email,
             displayName: display_name,
@@ -105,6 +108,19 @@ app.get('/token', async (req, res)=>{
     res.json({error: err.message});
   }
 
+})
+
+app.post('/refresh', async (req,res)=>{
+  const refresh_token = req.body;
+  console.log("Refresh Token: ", req.body);
+  Spotify.setRefreshToken(refresh_token);
+  Spotify.refreshAccessToken().then((data)=>{
+    console.log(data);
+    res.json(data.body);
+  }).catch((err)=>{
+    functions.logger.error("Refresh error:", err);
+    res.status(401).json(err);
+  })
 })
 
 

@@ -6,7 +6,7 @@ import { Box } from '@chakra-ui/react';
 import { useFirebase, isLoaded, isEmpty } from 'react-redux-firebase';
 import { useDispatch, useSelector } from 'react-redux';
 import { setError } from 'state/Error/action';
-import { setAuthToken } from 'utils/auth';
+import { setAuthToken, setRefreshToken } from 'utils/auth';
 import { RootState } from 'state';
 
 interface AuthProps extends RouteComponentProps {}
@@ -35,6 +35,7 @@ export const AuthComponent: React.FC<AuthProps> = ({ location }) => {
 			dispatch(setError({ msg: 'Login error' }));
 		} else {
 			setAuthToken(data.access_token);
+			setRefreshToken(data.refresh_token);
 			console.log('firebase: ,', firebase);
 			firebase.login({
 				token: data.firebase_token,
