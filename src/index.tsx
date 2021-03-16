@@ -5,13 +5,23 @@ import { Provider } from 'react-redux';
 import { configureStore } from './state';
 import { App } from './App';
 import firebase from 'firebase/app';
+
 import { firebaseConfig } from './firebase';
 import { ReactReduxFirebaseProvider } from 'react-redux-firebase';
+require('firebase/auth');
+require('firebase/database');
+export const app = firebase.initializeApp(firebaseConfig);
 
-const app = firebase.initializeApp(firebaseConfig);
+if (process.env.NODE_ENV !== 'production') {
+	const auth = firebase.auth();
+	const db = firebase.database();
+	auth.useEmulator('http://localhost:9099');
+	db.useEmulator('localhost', 9000);
+}
 
 const rrfConfig = {
 	userProfile: 'users',
+	updateProfileOnLogin: false,
 	// useFirestoreForProfile: true // Firestore for Profile instead of Realtime DB
 };
 

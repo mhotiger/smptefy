@@ -1,5 +1,5 @@
 import * as functions from "firebase-functions";
-import express, { response } from 'express'
+import express from 'express'
 import cors from 'cors'
 import SpotifyWebApi  from 'spotify-web-api-node'
 import cookieParser from 'cookie-parser'
@@ -8,6 +8,7 @@ import str from '@supercharge/strings'
 
 import admin from 'firebase-admin';
 import serviceAccount from './smptefy-firebase-adminsdk-4bpl5-164b310110.json'
+
 
 
 const params = {
@@ -89,6 +90,12 @@ app.get('/token', async (req, res)=>{
         res.json({
           firebase_token,
           access_token: data.body.access_token,
+          profile:{
+            email,
+            displayName: display_name,
+            id:`spotify:${id}`,
+            photoURL:profile_pic
+          }
         })
       })
     });
@@ -127,8 +134,8 @@ const createFirebaseAccount = async (spotify_id:string, display_name:string, pro
     await Promise.all([userCreate,databaseWrite]).catch((err)=>{
       throw err;
     });
-    const firebaseToken = admin.auth().createCustomToken(uid);
-
+    const firebaseToken = await admin.auth().createCustomToken(uid)
+    console.log("firebaseToken: ", firebaseToken);
     return firebaseToken;
 }
 
