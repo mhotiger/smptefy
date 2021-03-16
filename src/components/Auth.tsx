@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Redirect, RouteComponentProps } from 'react-router';
 import queryString from 'query-string';
 import { Box } from '@chakra-ui/react';
-import { useFirebase } from 'react-redux-firebase';
+import { useFirebase, isLoaded, isEmpty } from 'react-redux-firebase';
 import { useDispatch, useSelector } from 'react-redux';
 import { setError } from 'state/Error/action';
 import { setAuthToken } from 'utils/auth';
@@ -18,7 +18,7 @@ export const AuthComponent: React.FC<AuthProps> = ({ location }) => {
 	const dispatch = useDispatch();
 
 	const code = queryString.parse(location.search).code;
-	console.log('code: ', code);
+
 	const fetchToken = async () => {
 		const resp = await fetch(
 			`http://localhost:5001/smptefy/us-central1/auth/token?code=${code}`,
@@ -40,13 +40,20 @@ export const AuthComponent: React.FC<AuthProps> = ({ location }) => {
 				token: data.firebase_token,
 				profile: data.profile,
 			});
-			// firebase.auth().signInWithCustomToken(data.firebase_token);
 		}
+		setLoading(false);
 	};
 
 	useEffect(() => {
 		fetchToken();
 	}, []);
 
-	return <Box>loading...</Box>;
+	if (!isLoaded(auth) || loading) {
+		return <Loading />;
+	} else if (!isEmpty(auth)) {
+		return <Redirect to='/' />;
+	} else {
+		dispatch(setError({ msg: 'Authentication error' }));
+		return <Redirect to='/login' />;
+	}
 };
