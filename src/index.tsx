@@ -1,4 +1,4 @@
-import { ColorModeScript } from '@chakra-ui/react';
+import { ChakraProvider, ColorModeScript } from '@chakra-ui/react';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
@@ -10,6 +10,7 @@ import { firebaseConfig } from './firebase';
 import { ReactReduxFirebaseProvider } from 'react-redux-firebase';
 require('firebase/auth');
 require('firebase/database');
+require('firebase/functions');
 export const app = firebase.initializeApp(firebaseConfig);
 
 if (process.env.NODE_ENV !== 'production') {
@@ -38,8 +39,10 @@ ReactDOM.render(
 	<React.StrictMode>
 		<Provider store={store}>
 			<ReactReduxFirebaseProvider {...rrfProps}>
-				<ColorModeScript />
-				<App />
+				<ChakraProvider>
+					<ColorModeScript />
+					<App />
+				</ChakraProvider>
 			</ReactReduxFirebaseProvider>
 		</Provider>
 	</React.StrictMode>,
