@@ -1,4 +1,4 @@
-import { ChakraProvider, ColorModeScript } from '@chakra-ui/react';
+import { ChakraProvider, ColorModeScript, extendTheme } from '@chakra-ui/react';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
@@ -28,6 +28,13 @@ const rrfConfig = {
 
 const store = configureStore();
 
+const theme = extendTheme({
+	config: {
+		initialColorMode: 'dark',
+		useSystemColorMode: false,
+	},
+});
+
 const rrfProps = {
 	firebase,
 	config: rrfConfig,
@@ -39,8 +46,8 @@ ReactDOM.render(
 	<React.StrictMode>
 		<Provider store={store}>
 			<ReactReduxFirebaseProvider {...rrfProps}>
-				<ChakraProvider>
-					<ColorModeScript />
+				<ChakraProvider theme={theme}>
+					<ColorModeScript initialColorMode='dark' />
 					<App />
 				</ChakraProvider>
 			</ReactReduxFirebaseProvider>
