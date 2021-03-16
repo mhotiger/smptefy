@@ -17,16 +17,8 @@ export const  getAuthToken =  () =>{
     return authToken;
 }
 
-export const setAuthToken = (tkData: TokenResponse) =>{
-    if(tkData.access_token){
-        
-        authToken = tkData.access_token;
-        
-    } 
-        
-    else{
-        authToken = "";
-    }
+export const setAuthToken = (token: string) =>{
+    authToken = (token)? token: "";
 }
 
 export const refresh = async()=>{

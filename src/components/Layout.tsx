@@ -54,10 +54,10 @@ export const Layout: React.FC<LayoutProps> = () => {
 					},
 				}}>
 				<Switch>
-					<PrivateRoute path={path}>
+					<PrivateRoute path={path} exact>
 						<PlaylistView />
 					</PrivateRoute>
-					<PrivateRoute path={`${path}/:id`}>
+					<PrivateRoute path={`${path}playlist/:id`}>
 						<TrackListView />
 					</PrivateRoute>
 				</Switch>

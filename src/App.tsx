@@ -40,7 +40,7 @@ export const App = () => {
 				<Route path='/login' exact>
 					<Login />
 				</Route>
-				<PrivateRoute path='/' exact>
+				<PrivateRoute path='/'>
 					<Layout />
 				</PrivateRoute>
 			</Switch>
