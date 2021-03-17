@@ -20,7 +20,7 @@ if (
 	const auth = firebase.auth();
 	const db = firebase.database();
 	auth.useEmulator('http://localhost:9099');
-	db.useEmulator('localhost', 9002);
+	db.useEmulator('localhost', 9000);
 }
 
 const rrfConfig = {
