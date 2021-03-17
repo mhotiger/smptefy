@@ -52,15 +52,29 @@ const OAUTH_SCOPES = [
 
 app.use(
 	cors({
-		origin: [
-			'http://localhost:3000',
-			'http://localhost:5000',
-			'https://smptefy.com',
-			'https://smptefy.web.app',
-		],
+		origin: 'https://smptefy.web.app',
 		credentials: true,
 	})
 );
+app.use(
+	cors({
+		origin: 'https://smptefy.com',
+		credentials: true,
+	})
+);
+app.use(
+	cors({
+		origin: 'http://localhost:3000',
+		credentials: true,
+	})
+);
+app.use(
+	cors({
+		origin: 'http://localhost:5000',
+		credentials: true,
+	})
+);
+
 app.use(cookieParser());
 app.use(express.json());
 
