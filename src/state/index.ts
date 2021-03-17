@@ -19,6 +19,7 @@ import { spotifyPlayerReducer } from "./SpotifyWebPlayback/reducer"
 import { SpotifyPlayerAction } from "./SpotifyWebPlayback/types"
 import { spotifyEpic } from "./SpotifyWebPlayback/epic"
 import { trackOffsetReducer } from "./Offsets/reducer"
+import {firebaseReducer} from 'react-redux-firebase';
 
 const rootReducer = combineReducers({
     user: userReducer,
@@ -27,7 +28,8 @@ const rootReducer = combineReducers({
     errors: errorReducer,
     midi: midiPlayerReducer,
     spotify: spotifyPlayerReducer,
-    offsets: trackOffsetReducer
+    offsets: trackOffsetReducer,
+    firebase: firebaseReducer,
 })
 
 export type RootState = ReturnType<typeof rootReducer>

@@ -1,51 +1,49 @@
-import * as React from "react"
-import {
-  ChakraProvider,
-  theme,
-} from "@chakra-ui/react"
-import { useDispatch, useSelector } from "react-redux"
-import { RootState } from "state"
-import { fetchUser } from "state/User/action"
+import * as React from 'react';
+import { Box, ChakraProvider, theme } from '@chakra-ui/react';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from 'state';
+import { fetchUser } from 'state/User/action';
 
-import Layout from "components/Layout"
-import Login from "components/Login"
-import { ErrorMessages } from "components/ErrorMessages"
-import { initMidiAction } from "state/MidiPlayer/actions"
-import { setSpotifyReadyAction } from "state/SpotifyWebPlayback/actions"
+import Layout from 'components/Layout';
+import Login from 'components/Login';
+import { ErrorMessages } from 'components/ErrorMessages';
+import { initMidiAction } from 'state/MidiPlayer/actions';
+import { setSpotifyReadyAction } from 'state/SpotifyWebPlayback/actions';
+import { isLoaded, useFirebase, isEmpty } from 'react-redux-firebase';
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { Loading } from 'containers/Loading';
+import { AuthComponent } from 'components/Auth';
+import { PrivateRoute } from 'components/PrivateRoute';
 
-export const App = () =>{
+export const App = () => {
+	const firebase = useFirebase();
 
-  const user = useSelector((state: RootState) => state.user.userProfile)
-  const dispatch = useDispatch()
+	const auth = useSelector((state: RootState) => state.firebase.auth);
+	const dispatch = useDispatch();
 
+	window.onSpotifyWebPlaybackSDKReady = () => {
+		console.log('spotify ready');
+		dispatch(setSpotifyReadyAction(true));
+	};
 
-  window.onSpotifyWebPlaybackSDKReady = ()=>{
-    console.log("spotify ready")
-    dispatch(setSpotifyReadyAction(true))
-  }
+	React.useEffect(() => {
+		dispatch(initMidiAction());
+	}, [dispatch]);
 
-  React.useEffect(()=>{
-    dispatch(initMidiAction())
-    
-  },[dispatch])
-
-  if(!user){
-    dispatch(fetchUser())
-  }
-  if(user){
-    return (
-      <ChakraProvider theme={theme}>
-        <Layout/>
-        <ErrorMessages/>
-      </ChakraProvider>
-    )
-  }
-  else{
-    return(
-    <ChakraProvider theme={theme}>
-      <Login/>
-      
-    </ChakraProvider>
-    )
-  }
-}
+	return (
+		<BrowserRouter>
+			<Switch>
+				<Route
+					path='/loginauth'
+					exact
+					component={AuthComponent}></Route>
+				<Route path='/login' exact>
+					<Login />
+				</Route>
+				<PrivateRoute path='/'>
+					<Layout />
+				</PrivateRoute>
+			</Switch>
+		</BrowserRouter>
+	);
+};
