@@ -13,7 +13,10 @@ require('firebase/database');
 require('firebase/functions');
 export const app = firebase.initializeApp(firebaseConfig);
 
-if (process.env.NODE_ENV !== 'production') {
+if (
+	window.location.hostname === 'localhost' ||
+	window.location.hostname === '127.0.0.1'
+) {
 	const auth = firebase.auth();
 	const db = firebase.database();
 	auth.useEmulator('http://localhost:9099');
