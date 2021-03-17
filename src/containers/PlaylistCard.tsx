@@ -1,6 +1,6 @@
 import { BoxProps, Flex, Heading, Spacer, Image, Text } from '@chakra-ui/react';
 import React from 'react';
-import defaultCover from 'defaultCover.png';
+import defaultCover from 'img/defaultCover.png';
 
 interface PlaylistCardProps extends BoxProps {
 	playlistItem: SpotifyApi.PlaylistObjectFull;
