@@ -6,6 +6,8 @@ import { FUNCTIONS_URL_BASE } from 'envconstants';
 interface LoginProps extends BoxProps {}
 
 export const Login: React.FC<LoginProps> = () => {
+	console.log('hostname: ', window.location.hostname);
+	console.log('location: ', `${FUNCTIONS_URL_BASE}/auth/redirect`);
 	return (
 		<Box
 			position='fixed'
