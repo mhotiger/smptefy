@@ -34,7 +34,7 @@ const Spotify = new SpotifyWebApi({
 	redirectUri:
 		functions.config().env.prod === 'true'
 			? `https://smptefy.web.app/loginauth`
-			: `http://localhost:5000/loginauth`,
+			: `http://localhost:3000/loginauth`,
 });
 
 const OAUTH_SCOPES = [
