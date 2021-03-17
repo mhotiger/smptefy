@@ -1,6 +1,7 @@
 import { Box, BoxProps, Button, Flex } from '@chakra-ui/react';
 import spotifyLogo from '../img/spotifyLogo.png';
 import React from 'react';
+import { FUNCTIONS_URL_BASE } from 'envconstants';
 
 interface LoginProps extends BoxProps {}
 
@@ -19,7 +20,7 @@ export const Login: React.FC<LoginProps> = () => {
 					p='1em'
 					onClick={() =>
 						window.location.assign(
-							'http://localhost:5001/smptefy/us-central1/auth/redirect'
+							`${FUNCTIONS_URL_BASE}/auth/redirect`
 						)
 					}>
 					log in with spotify

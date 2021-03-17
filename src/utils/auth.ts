@@ -1,3 +1,4 @@
+import { FUNCTIONS_URL_BASE } from "envconstants";
 
 
 
@@ -24,7 +25,7 @@ export const setRefreshToken = (token:string)=>{
 }
 
 export const refresh = async()=>{
-    const resp = await fetch('http://localhost:5001/smptefy/us-central1/auth/refresh',{
+    const resp = await fetch(`${FUNCTIONS_URL_BASE}/smptefy/us-central1/auth/refresh`,{
         body: refresh_token,
         method:"POST"
     });

@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setError } from 'state/Error/action';
 import { setAuthToken, setRefreshToken } from 'utils/auth';
 import { RootState } from 'state';
+import { FUNCTIONS_URL_BASE } from 'envconstants';
 
 interface AuthProps extends RouteComponentProps {}
 
@@ -21,7 +22,7 @@ export const AuthComponent: React.FC<AuthProps> = ({ location }) => {
 
 	const fetchToken = async () => {
 		const resp = await fetch(
-			`http://localhost:5001/smptefy/us-central1/auth/token?code=${code}`,
+			`${FUNCTIONS_URL_BASE}/auth/token?code=${code}`,
 			{
 				credentials: 'include',
 				headers: {
@@ -37,7 +38,7 @@ export const AuthComponent: React.FC<AuthProps> = ({ location }) => {
 			setAuthToken(data.access_token);
 			setRefreshToken(data.refresh_token);
 			console.log('firebase: ,', firebase);
-			firebase.login({
+			await firebase.login({
 				token: data.firebase_token,
 				profile: data.profile,
 			});
