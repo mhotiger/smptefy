@@ -34,7 +34,7 @@ const Spotify = new SpotifyWebApi({
 	redirectUri:
 		functions.config().env.prod === 'true'
 			? `https://smptefy.web.app/loginauth`
-			: `http://localhost:3000/loginauth`,
+			: `http://localhost:5000/loginauth`,
 });
 
 const OAUTH_SCOPES = [
@@ -65,11 +65,11 @@ app.get('/', (req, res) => {
 
 app.get('/redirect', (req, res) => {
 	const state: string = req.cookies.state || str.random(20);
-	functions.logger.info('State verification: ', state);
 	res.cookie('state', state, {
 		maxAge: 3600000,
 		secure: true,
 		httpOnly: true,
+		sameSite: 'lax',
 	});
 	const authorizeUrl = Spotify.createAuthorizeURL(OAUTH_SCOPES, state, true);
 	res.redirect(authorizeUrl);
