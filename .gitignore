@@ -30,3 +30,4 @@ database-debug.log
 smptefy-firebase-adminsdk*
 .gitignore
 firestore-debug.log
+.firebase/hosting.YnVpbGQ.cache
