@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import express from 'express';
-import cors from 'cors';
+
 import SpotifyWebApi from 'spotify-web-api-node';
 import cookieParser from 'cookie-parser';
 import str from '@supercharge/strings';
@@ -8,6 +8,7 @@ import str from '@supercharge/strings';
 import admin from 'firebase-admin';
 import serviceAccount from './smptefy-firebase-adminsdk-4bpl5-164b310110.json';
 
+const cors = require('cors');
 const params = {
 	type: serviceAccount.type,
 	projectId: serviceAccount.project_id,
@@ -23,10 +24,11 @@ const params = {
 
 admin.initializeApp({
 	credential: admin.credential.cert(params),
-	databaseURL: `https://smptefy.firebaseio.com`,
+	databaseURL: `https://smptefy-default-rtdb.firebaseio.com/`,
 });
 
 const app = express();
+// app.use(cors());
 
 const Spotify = new SpotifyWebApi({
 	clientId: functions.config().spotify!.client_id,
@@ -52,28 +54,33 @@ const OAUTH_SCOPES = [
 
 app.use(
 	cors({
-		origin: 'https://smptefy.web.app',
+		origin: [
+			'https://smptefy.web.app',
+			'https://smptefy.com',
+			'http://localhost:3000',
+			'http://localhost:5000',
+		],
 		credentials: true,
 	})
 );
-app.use(
-	cors({
-		origin: 'https://smptefy.com',
-		credentials: true,
-	})
-);
-app.use(
-	cors({
-		origin: 'http://localhost:3000',
-		credentials: true,
-	})
-);
-app.use(
-	cors({
-		origin: 'http://localhost:5000',
-		credentials: true,
-	})
-);
+// app.use(
+// 	cors({
+// 		origin: 'https://smptefy.com',
+// 		credentials: true,
+// 	})
+// );
+// app.use(
+// 	cors({
+// 		origin: 'http://localhost:3000',
+// 		credentials: true,
+// 	})
+// );
+// app.use(
+// 	cors({
+// 		origin: 'http://localhost:5000',
+// 		credentials: true,
+// 	})
+// );
 
 app.use(cookieParser());
 app.use(express.json());
@@ -83,6 +90,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/redirect', (req, res) => {
+	console.log('/redirect:\texecution started');
 	const state: string = req.cookies.state || str.random(20);
 	res.cookie('state', state, {
 		maxAge: 3600000,
@@ -95,6 +103,8 @@ app.get('/redirect', (req, res) => {
 });
 
 app.get('/token', async (req, res) => {
+	console.log('/token: \texecution started');
+
 	try {
 		Spotify.authorizationCodeGrant(
 			req.query.code as string,
@@ -135,6 +145,7 @@ app.get('/token', async (req, res) => {
 			}
 		);
 	} catch (err) {
+		functions.logger.error('/token:\tERROR:', err.message);
 		res.json({ error: err.message });
 	}
 });
