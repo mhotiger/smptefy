@@ -31,19 +31,22 @@ export const App = () => {
 	}, [dispatch]);
 
 	return (
-		<BrowserRouter>
-			<Switch>
-				<Route
-					path='/loginauth'
-					exact
-					component={AuthComponent}></Route>
-				<Route path='/login' exact>
-					<Login />
-				</Route>
-				<PrivateRoute path='/'>
-					<Layout />
-				</PrivateRoute>
-			</Switch>
-		</BrowserRouter>
+		<>
+			<BrowserRouter>
+				<Switch>
+					<Route
+						path='/loginauth'
+						exact
+						component={AuthComponent}></Route>
+					<Route path='/login' exact>
+						<Login />
+					</Route>
+					<PrivateRoute path='/'>
+						<Layout />
+					</PrivateRoute>
+				</Switch>
+			</BrowserRouter>
+			<ErrorMessages />
+		</>
 	);
 };

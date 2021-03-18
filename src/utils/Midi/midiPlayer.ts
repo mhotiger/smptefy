@@ -5,7 +5,7 @@ import webmidi, { Input, Output } from 'webmidi';
 import { MTCTime } from './MTCTime';
 import { fps25, TCFramerate, TCtime } from './types';
 
-const TCSpeeds = [24, 25, 29.97, 30];
+export const TCSpeeds = [24, 25, 29.97, 30];
 
 export class MidiTcPlayer {
 	inputs: Input[];

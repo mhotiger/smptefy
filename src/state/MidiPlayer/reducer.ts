@@ -6,6 +6,7 @@ import {
 	PLAY_MIDI,
 	SET_MIDI_CLOCK_MS,
 	SET_MIDI_CLOCK_OFFSET,
+	SET_MIDI_FRAMERATE,
 	SET_MIDI_INPUT,
 	SET_MIDI_OUTPUT,
 	SET_MIDI_PLAYER,
@@ -84,6 +85,10 @@ export const midiPlayerReducer = produce(
 						state.player.outputs[action.output];
 					state.player.activeOutputIndex = action.output;
 				}
+				return state;
+
+			case SET_MIDI_FRAMERATE:
+				state.player.rate = action.rate;
 				return state;
 
 			default:
