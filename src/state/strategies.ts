@@ -21,6 +21,7 @@ export const retryStrategy = ({
 		}),
 		mergeMap((error, i) => {
 			const retryAttempt = i + 1;
+			console.log('error: ', error);
 			console.log('current auth token retry', getAuthToken());
 			if (retryAttempt > maxRetryAttempts) {
 				return throwError(error);
