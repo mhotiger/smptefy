@@ -15,6 +15,10 @@ import {
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from 'state';
+import {
+	setMidiInputAction,
+	setMidiOutputAction,
+} from 'state/MidiPlayer/actions';
 
 interface MidiSettingsPanelProps {}
 
@@ -23,12 +27,26 @@ export const MidiSettingsPanel: React.FC<MidiSettingsPanelProps> = ({}) => {
 	const outputs = useSelector(
 		(state: RootState) => state.midi.player.outputs
 	);
+	const inputIndex = useSelector(
+		(state: RootState) => state.midi.player.activeInputIndex
+	);
+	const outputIndex = useSelector(
+		(state: RootState) => state.midi.player.activeOutputIndex
+	);
 
 	const inputItems = inputs.map((input, i) => {
-		return <option value={i}>{input.name}</option>;
+		return (
+			<option key={`input${i}`} value={i}>
+				{input.name}
+			</option>
+		);
 	});
 	const outputItems = outputs.map((output, i) => {
-		return <option value={i}>{output.name}</option>;
+		return (
+			<option key={`output${i}`} value={i}>
+				{output.name}
+			</option>
+		);
 	});
 
 	const dispatch = useDispatch();
@@ -37,12 +55,14 @@ export const MidiSettingsPanel: React.FC<MidiSettingsPanelProps> = ({}) => {
 		e
 	) => {
 		console.log('input change: ', e.target.value);
+		dispatch(setMidiInputAction(parseInt(e.target.value)));
 	};
 
 	const handleOutputChange: React.ChangeEventHandler<HTMLSelectElement> = (
 		e
 	) => {
 		console.log('outputChange: ', e.target.value);
+		dispatch(setMidiOutputAction(parseInt(e.target.value)));
 	};
 	return (
 		<AccordionItem>
@@ -65,7 +85,8 @@ export const MidiSettingsPanel: React.FC<MidiSettingsPanelProps> = ({}) => {
 							<Select
 								size='sm'
 								m='0.2rem'
-								onChange={handleInputChange}>
+								onChange={handleInputChange}
+								defaultValue={inputIndex}>
 								{inputItems}
 							</Select>
 						</GridItem>
@@ -83,7 +104,8 @@ export const MidiSettingsPanel: React.FC<MidiSettingsPanelProps> = ({}) => {
 							<Select
 								size='sm'
 								m='0.2rem'
-								onChange={handleOutputChange}>
+								onChange={handleOutputChange}
+								defaultValue={outputIndex}>
 								{outputItems}
 							</Select>
 						</GridItem>
