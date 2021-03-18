@@ -33,7 +33,7 @@ export const AuthComponent: React.FC<AuthProps> = ({ location }) => {
 		const data = await resp.json();
 		console.log('token response: ', data);
 		if (data.error) {
-			dispatch(setError({ msg: 'Login error' }));
+			dispatch(setError('Login error'));
 		} else {
 			setAuthToken(data.access_token);
 			setRefreshToken(data.refresh_token);
@@ -55,7 +55,7 @@ export const AuthComponent: React.FC<AuthProps> = ({ location }) => {
 	} else if (!isEmpty(auth)) {
 		return <Redirect to='/' />;
 	} else {
-		dispatch(setError({ msg: 'Authentication error' }));
+		dispatch(setError('Authentication error'));
 		return <Redirect to='/login' />;
 	}
 };
