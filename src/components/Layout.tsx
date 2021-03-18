@@ -1,4 +1,4 @@
-import { Grid, GridItem } from '@chakra-ui/react';
+import { Accordion, Grid, GridItem } from '@chakra-ui/react';
 import PlaylistView from 'pages/PlaylistView';
 import { TrackListView } from 'pages/TrackListView';
 import React from 'react';
@@ -11,6 +11,7 @@ import {
 } from 'react-router-dom';
 import { RootState } from 'state';
 import { initSpotifyAction } from 'state/SpotifyWebPlayback/actions';
+import { MidiSettingsPanel } from './MidiSettingsPanel';
 import { PlayerBar } from './PlayerBar';
 import { PrivateRoute } from './PrivateRoute';
 import { UserPanel } from './UserPanel';
@@ -33,7 +34,10 @@ export const Layout: React.FC<LayoutProps> = () => {
 			templateColumns='repeat(5,1fr)'
 			templateRows='repeat(10,1fr)'>
 			<GridItem colSpan={1} rowSpan={8} bg='gray.900'>
-				<UserPanel />
+				<Accordion allowMultiple>
+					<UserPanel />
+					<MidiSettingsPanel />
+				</Accordion>
 			</GridItem>
 
 			<GridItem

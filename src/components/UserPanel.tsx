@@ -6,6 +6,11 @@ import {
 	Heading,
 	Text,
 	Image,
+	AccordionButton,
+	AccordionPanel,
+	AccordionIcon,
+	AccordionItem,
+	Spacer,
 } from '@chakra-ui/react';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -27,25 +32,30 @@ export const UserPanel: React.FC<UserPanelProps> = ({}) => {
 	}
 
 	return (
-		<Box m='1rem'>
-			<Flex direction='row'>
-				<Image
-					m='0.5rem'
-					width='45px'
-					height='45px'
-					src={photo}
-					borderRadius='100%'
-				/>
-				<Heading textAlign='right' p='0.5rem' size='md'>
-					{auth.displayName}
-				</Heading>
-			</Flex>
-			<Divider width='85%' />
-			<Box m='2' pl='50%'>
-				<Button align='right' onClick={() => firebase.logout()}>
-					Logout
-				</Button>
-			</Box>
-		</Box>
+		<AccordionItem>
+			<AccordionButton>
+				<Flex direction='row' alignContent='center' alignItems='center'>
+					<Image
+						m='0.5rem'
+						width='45px'
+						height='45px'
+						src={photo}
+						borderRadius='100%'
+					/>
+					<Heading textAlign='right' p='0.5rem' size='sm'>
+						{auth.displayName}
+					</Heading>
+					<Spacer />
+					<AccordionIcon textAlign='right' />
+				</Flex>
+			</AccordionButton>
+			<AccordionPanel>
+				<Box m='2' pl='50%'>
+					<Button align='right' onClick={() => firebase.logout()}>
+						Logout
+					</Button>
+				</Box>
+			</AccordionPanel>
+		</AccordionItem>
 	);
 };
