@@ -7,7 +7,6 @@ interface PlaylistCardProps extends BoxProps {
 }
 
 export const PlaylistCard: React.FC<PlaylistCardProps> = (props) => {
-	console.log('playlist: ', props.playlistItem);
 	return (
 		<Flex
 			bg='gray.900'

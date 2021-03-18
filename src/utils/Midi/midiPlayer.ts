@@ -48,6 +48,8 @@ export class MidiTcPlayer {
 		this.activeOutput = this.outputs ? this.outputs[0] : undefined;
 		this.activeOutputIndex = this.outputs && 0;
 		this.activeInputIndex = this.inputs && 0;
+		webmidi.addListener('connected', (e) => console.log(e));
+		webmidi.addListener('disconnected', (e) => console.log(e));
 		return this;
 	}
 
