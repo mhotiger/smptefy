@@ -152,13 +152,13 @@ const spotifyPlayPauseEpic: Epic<AllActions, AllActions, RootState, void> = (
 						spotify.playbackState.paused
 					) {
 						if (spotify.playbackState.disallows['resuming']) {
-							return setError({
-								msg: `Cannot play: 
+							return setError(
+								`Cannot play: 
                                     ${spotify.playbackState.restrictions.disallow_resuming_reasons.reduce(
 										(a, s) => a + ', ' + s,
 										''
-									)}`,
-							});
+									)}`
+							);
 						} else {
 							spotify.player.resume();
 						}
@@ -172,13 +172,13 @@ const spotifyPlayPauseEpic: Epic<AllActions, AllActions, RootState, void> = (
 						!spotify.playbackState.paused
 					) {
 						if (spotify.playbackState.disallows['pausing']) {
-							return setError({
-								msg: `Cannot play: 
+							return setError(
+								`Cannot play: 
                                     ${spotify.playbackState.restrictions.disallow_pausing_reasons.reduce(
 										(a, s) => a + ', ' + s,
 										''
-									)}`,
-							});
+									)}`
+							);
 						} else {
 							spotify.player.pause();
 						}
@@ -212,7 +212,7 @@ const spotifySeekEpic: Epic<AllActions, AllActions, RootState, void> = (
 			const playbackState = state$.value.spotify.playbackState;
 			if (player && playbackState) {
 				if (playbackState.disallows['seeking']) {
-					return setError({ msg: 'Cannot seek' });
+					return setError('Cannot seek');
 				} else if (
 					action.time >= 0 &&
 					action.time < playbackState.duration

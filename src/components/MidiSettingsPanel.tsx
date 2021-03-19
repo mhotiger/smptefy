@@ -86,9 +86,7 @@ export const MidiSettingsPanel: React.FC<MidiSettingsPanelProps> = ({}) => {
 			if (rate === 2) {
 				console.log('29.97 selected');
 				dispatch(
-					setError({
-						msg: '29.97fps Timecode is currently not supported',
-					})
+					setError('29.97fps Timecode is currently not supported')
 				);
 				e.target.value = framerate.toString();
 				return;
