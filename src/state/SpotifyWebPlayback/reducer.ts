@@ -47,21 +47,21 @@ export const spotifyPlayerReducer = produce(
 
 				state.player.addListener('initialization_error', () => {
 					action.dispatch(
-						setError({ msg: 'Error initializing spotify player' })
+						setError('Error initializing spotify player')
 					);
 				});
 				state.player.addListener(
 					'authentication_error',
 					({ message }) => {
 						console.error(message);
-						action.dispatch(setError({ msg: message }));
+						action.dispatch(setError(message));
 					}
 				);
 				state.player.addListener('account_error', ({ message }) => {
-					action.dispatch(setError({ msg: message }));
+					action.dispatch(setError(message));
 				});
 				state.player.addListener('playback_error', ({ message }) => {
-					action.dispatch(setError({ msg: message }));
+					action.dispatch(setError(message));
 				});
 
 				// Playback status updates
@@ -86,9 +86,7 @@ export const spotifyPlayerReducer = produce(
 
 				// Not Ready
 				state.player.addListener('not_ready', ({ device_id }) => {
-					action.dispatch(
-						setError({ msg: `Device ${device_id} is offline` })
-					);
+					action.dispatch(setError(`Device ${device_id} is offline`));
 
 					action.dispatch(setSpotifyDeviceIdAction(undefined));
 					action.dispatch(spotifyPlaybackReadyAction(false));

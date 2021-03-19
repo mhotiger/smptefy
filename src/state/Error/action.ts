@@ -1,14 +1,22 @@
-import { CLEAR_ERRORS, ErrorAction, ErrorMessage, SET_ERROR } from "./types";
+import {
+	CLEAR_ERRORS,
+	ErrorAction,
+	ErrorResponseUserAction,
+	SET_ERROR,
+} from './types';
 
-export const setError = (error: ErrorMessage): ErrorAction=>{
-    return{
-        type: SET_ERROR,
-        payload: error
-    }
-}
+export const setError = (
+	message: string,
+	action?: ErrorResponseUserAction[]
+): ErrorAction => {
+	return {
+		type: SET_ERROR,
+		payload: { message, action },
+	};
+};
 
-export const clearErrors = (): ErrorAction =>{
-    return{
-        type: CLEAR_ERRORS
-    }
-}
+export const clearErrors = (): ErrorAction => {
+	return {
+		type: CLEAR_ERRORS,
+	};
+};
