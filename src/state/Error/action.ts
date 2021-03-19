@@ -1,7 +1,14 @@
-import { AllActions } from 'state';
-import { CLEAR_ERRORS, ErrorAction, ErrorMessage, SET_ERROR } from './types';
+import {
+	CLEAR_ERRORS,
+	ErrorAction,
+	ErrorResponseUserAction,
+	SET_ERROR,
+} from './types';
 
-export const setError = (message: string, action?: AllActions): ErrorAction => {
+export const setError = (
+	message: string,
+	action?: ErrorResponseUserAction[]
+): ErrorAction => {
 	return {
 		type: SET_ERROR,
 		payload: { message, action },

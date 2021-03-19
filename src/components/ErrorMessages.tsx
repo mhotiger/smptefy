@@ -22,19 +22,60 @@ export const ErrorMessages: React.FC<ErrorMessagesProps> = () => {
 	const cancelRef = useRef(null);
 
 	const errors = useSelector((state: RootState) => state.errors.errors);
-	let error = errors[0];
-	if (errors.length > 0 && !isOpen) {
-		setIsOpen(true);
-	}
 
 	const onClose = () => {
+		errorResponseButtons.current = undefined;
 		setIsOpen(false);
 		dispatch(clearErrors());
-		if (error.action) {
-			dispatch(error.action);
-		}
 	};
 
+	let error = errors[0];
+	let errorResponseButtons = useRef<
+		JSX.Element | JSX.Element[] | undefined
+	>();
+
+	if (errors.length > 0 && !isOpen) {
+		console.log(errors);
+		if (errors[0].action) {
+			errorResponseButtons.current = errors[0].action.map((a, i) => {
+				if (i === 0) {
+					return (
+						<Button
+							m='0.3rem'
+							ref={cancelRef}
+							key={`${a.message}-${i}`}
+							onClick={() => {
+								dispatch(a.action);
+								onClose();
+							}}>
+							{a.message}
+						</Button>
+					);
+				} else {
+					return (
+						<Button
+							m='0.3rem'
+							key={`${a.message}-${i}`}
+							onClick={() => {
+								dispatch(a.action);
+								onClose();
+							}}>
+							{a.message}
+						</Button>
+					);
+				}
+			});
+		} else {
+			errorResponseButtons.current = (
+				<Button m='0.3rem' ref={cancelRef} onClick={onClose}>
+					Ok
+				</Button>
+			);
+		}
+		console.log(errorResponseButtons);
+		setIsOpen(true);
+	}
+	console.log('errorButtons', errorResponseButtons);
 	return (
 		<AlertDialog
 			isOpen={isOpen}
@@ -51,9 +92,7 @@ export const ErrorMessages: React.FC<ErrorMessagesProps> = () => {
 					</AlertDialogBody>
 
 					<AlertDialogFooter>
-						<Button ref={cancelRef} onClick={onClose}>
-							Ok
-						</Button>
+						{errorResponseButtons.current}
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialogOverlay>
