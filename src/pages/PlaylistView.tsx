@@ -1,4 +1,5 @@
 import { Center } from '@chakra-ui/react';
+import ErrorBoundary from 'components/common/ErrorBoundary';
 import PlaylistCard from 'containers/PlaylistCard';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -22,12 +23,14 @@ export const PlaylistView: React.FC<PlaylistViewProps> = () => {
 	if (playlists.length !== 0) {
 		const list = playlists.map((p) => {
 			return (
-				<Link
-					onClick={() => dispatch(setPlaylistSourceAction(p))}
-					key={p.id}
-					to={'/playlist/' + p.id}>
-					<PlaylistCard playlistItem={p} />
-				</Link>
+				<ErrorBoundary key={p.id}>
+					<Link
+						onClick={() => dispatch(setPlaylistSourceAction(p))}
+						key={p.id}
+						to={'/playlist/' + p.id}>
+						<PlaylistCard playlistItem={p} />
+					</Link>
+				</ErrorBoundary>
 			);
 		});
 		return <>{list}</>;
