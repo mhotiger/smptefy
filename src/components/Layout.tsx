@@ -11,6 +11,7 @@ import {
 } from 'react-router-dom';
 import { RootState } from 'state';
 import { initSpotifyAction } from 'state/SpotifyWebPlayback/actions';
+import ErrorBoundary from './common/ErrorBoundary';
 import { MidiSettingsPanel } from './MidiSettingsPanel';
 import { PlayerBar } from './PlayerBar';
 import { PrivateRoute } from './PrivateRoute';
@@ -34,10 +35,12 @@ export const Layout: React.FC<LayoutProps> = () => {
 			templateColumns='repeat(5,1fr)'
 			templateRows='repeat(10,1fr)'>
 			<GridItem colSpan={1} rowSpan={8} bg='gray.900'>
-				<Accordion allowMultiple>
-					<UserPanel />
-					<MidiSettingsPanel />
-				</Accordion>
+				<ErrorBoundary>
+					<Accordion allowMultiple>
+						<UserPanel />
+						<MidiSettingsPanel />
+					</Accordion>
+				</ErrorBoundary>
 			</GridItem>
 
 			<GridItem
@@ -57,23 +60,21 @@ export const Layout: React.FC<LayoutProps> = () => {
 						borderRadius: '0.5rem',
 					},
 				}}>
-				<Switch>
-					<PrivateRoute path={path} exact>
-						<PlaylistView />
-					</PrivateRoute>
-					<PrivateRoute path={`${path}playlist/:id`}>
-						<TrackListView />
-					</PrivateRoute>
-				</Switch>
-				{/* <Route
-					path='/play/playlist/:id'
-					exact
-					component={TrackListView}
-				/>
-				<Route path='/play/' exact component={PlaylistView} /> */}
+				<ErrorBoundary>
+					<Switch>
+						<PrivateRoute path={path} exact>
+							<PlaylistView />
+						</PrivateRoute>
+						<PrivateRoute path={`${path}playlist/:id`}>
+							<TrackListView />
+						</PrivateRoute>
+					</Switch>
+				</ErrorBoundary>
 			</GridItem>
 			<GridItem rowSpan={2} colSpan={8} bg='gray.800' zIndex={10}>
-				<PlayerBar />
+				<ErrorBoundary>
+					<PlayerBar />
+				</ErrorBoundary>
 			</GridItem>
 		</Grid>
 	);
