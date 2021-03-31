@@ -1,8 +1,8 @@
 import { Component } from 'react';
 import { defer, Observable, Subscription } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
-import { map, retryWhen } from 'rxjs/operators';
-import { retryStrategy } from 'state/strategies';
+import { catchError, map, retryWhen } from 'rxjs/operators';
+import { requestErrorStrategy, retryStrategy } from 'state/strategies';
 import { getAuthToken } from 'utils/auth';
 
 interface State {
@@ -27,9 +27,12 @@ export class SpotifyLoader extends Component<Props, State> {
 			ajax.getJSON(`https://api.spotify.com/v1/${this.props.path}`, {
 				Authorization: `Bearer ${getAuthToken()}`,
 				'Content-Type': 'application/json',
-			}).pipe(retryWhen(retryStrategy()));
+			}).pipe(
+				retryWhen(retryStrategy()),
+				catchError(requestErrorStrategy())
+			);
 		}).subscribe((response) => {
-			this.setState({ data: response });
+			this.setState({ data: response, loading: false });
 		});
 	};
 
