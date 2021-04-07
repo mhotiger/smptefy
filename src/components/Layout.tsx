@@ -1,7 +1,7 @@
 import { Accordion, Grid, GridItem, Text } from '@chakra-ui/react';
 import { Loading } from 'containers/Loading';
 import PlaylistCard from 'containers/PlaylistCard';
-import PlaylistView from 'pages/PlaylistView';
+import { PlaylistView } from 'pages/PlaylistView';
 import { TrackListView } from 'pages/TrackListView';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -75,42 +75,19 @@ export const Layout: React.FC<LayoutProps> = () => {
 									render={(state) => {
 										if (state.loading) {
 											return <Loading />;
-										} else if (state.data) {
+										} else if (state.data?.items) {
 											console.log(
-												'State data: ',
+												'state data: ',
 												state.data
 											);
-											const playlists = state.data.items.map(
-												(p: any) => {
-													return (
-														<ErrorBoundary
-															key={p.id}>
-															<Link
-																onClick={() => {
-																	dispatch(
-																		setPlaylistSourceAction(
-																			p
-																		)
-																	);
-																}}
-																to={`/playlist/${p.id}`}>
-																<PlaylistCard
-																	playlistItem={
-																		p
-																	}
-																/>
-															</Link>
-														</ErrorBoundary>
-													);
-												}
+											return (
+												<PlaylistView
+													playlistItems={
+														state.data
+															.items as SpotifyApi.PlaylistObjectFull[]
+													}
+												/>
 											);
-
-											console.log(
-												'Playlists: ',
-												playlists
-											);
-
-											return <>{playlists}</>;
 										} else {
 											return <Text>Nothing</Text>;
 										}

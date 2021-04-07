@@ -8,20 +8,17 @@ import { RootState } from 'state';
 import { fetchPlaylists } from 'state/Playlists/action';
 import { setPlaylistSourceAction } from 'state/Tracks/actions';
 
-interface PlaylistViewProps {}
+interface PlaylistViewProps {
+	playlistItems: SpotifyApi.PlaylistObjectFull[];
+}
 
-export const PlaylistView: React.FC<PlaylistViewProps> = () => {
-	const playlists = useSelector(
-		(state: RootState) => state.playlist.playlists
-	);
+export const PlaylistView: React.FC<PlaylistViewProps> = ({
+	playlistItems,
+}) => {
 	const dispatch = useDispatch();
 
-	useEffect(() => {
-		dispatch(fetchPlaylists());
-	}, [dispatch]);
-
-	if (playlists.length !== 0) {
-		const list = playlists.map((p) => {
+	if (playlistItems.length !== 0) {
+		const list = playlistItems.map((p) => {
 			return (
 				<ErrorBoundary key={p.id}>
 					<Link
@@ -35,7 +32,7 @@ export const PlaylistView: React.FC<PlaylistViewProps> = () => {
 		});
 		return <>{list}</>;
 	} else {
-		return <Center> Loading </Center>;
+		return <div> hi</div>;
 	}
 };
 
