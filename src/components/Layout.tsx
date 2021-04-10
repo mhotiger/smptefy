@@ -1,17 +1,22 @@
-import { Accordion, Grid, GridItem } from '@chakra-ui/react';
-import PlaylistView from 'pages/PlaylistView';
+import { Accordion, Grid, GridItem, Text } from '@chakra-ui/react';
+import { Loading } from 'containers/Loading';
+import PlaylistCard from 'containers/PlaylistCard';
+import { PlaylistView } from 'pages/PlaylistView';
 import { TrackListView } from 'pages/TrackListView';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
 	BrowserRouter as Router,
+	Link,
 	Route,
 	Switch,
 	useRouteMatch,
 } from 'react-router-dom';
 import { RootState } from 'state';
 import { initSpotifyAction } from 'state/SpotifyWebPlayback/actions';
+import { setPlaylistSourceAction } from 'state/Tracks/actions';
 import ErrorBoundary from './common/ErrorBoundary';
+import SpotifyLoader from './common/SpotifyLoader';
 import { MidiSettingsPanel } from './MidiSettingsPanel';
 import { PlayerBar } from './PlayerBar';
 import { PrivateRoute } from './PrivateRoute';
@@ -63,7 +68,31 @@ export const Layout: React.FC<LayoutProps> = () => {
 				<ErrorBoundary>
 					<Switch>
 						<PrivateRoute path={path} exact>
-							<PlaylistView />
+							{/* <PlaylistView /> */}
+							<ErrorBoundary>
+								<SpotifyLoader
+									path='me/playlists?limit=50'
+									render={(state) => {
+										if (state.loading) {
+											return <Loading />;
+										} else if (state.data?.items) {
+											console.log(
+												'state data: ',
+												state.data
+											);
+											return (
+												<PlaylistView
+													playlistItems={
+														state.data
+															.items as SpotifyApi.PlaylistObjectFull[]
+													}
+												/>
+											);
+										} else {
+											return <Text>Nothing</Text>;
+										}
+									}}></SpotifyLoader>
+							</ErrorBoundary>
 						</PrivateRoute>
 						<PrivateRoute path={`${path}playlist/:id`}>
 							<TrackListView />
