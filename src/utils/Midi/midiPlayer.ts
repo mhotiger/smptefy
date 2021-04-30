@@ -16,7 +16,8 @@ export class MidiTcPlayer {
 	activeInputIndex: number | undefined;
 	activeOutputIndex: number | undefined;
 	private quarterFrameCounter = 0;
-	time: MTCTime;
+	time: TCtime;
+	offset: TCtime;
 	rate: TCFramerate;
 	timeStringSrc = new ReplaySubject<string>(1);
 	timeString$ = this.timeStringSrc.asObservable();
@@ -28,15 +29,24 @@ export class MidiTcPlayer {
 	playerTimeout: NodeJS.Timeout | undefined;
 
 	constructor(time?: TCtime, rate?: TCFramerate, offset?: TCtime) {
-		const t = time ? time : { h: 0, m: 0, s: 0, f: 0 };
-		const r = rate ? rate : fps25;
-		const o = offset ? offset : { h: 2, m: 0, s: 5, f: 0 };
-		this.time = new MTCTime(t, r, o);
-		this.rate = this.time.rate;
+		this.time = time ? time : { h: 0, m: 0, s: 0, f: 0 };
+		this.rate = rate ? rate : fps25;
+		this.offset = offset ? offset : { h: 2, m: 0, s: 5, f: 0 };
+
 		this.inputs = [];
 		this.outputs = [];
 		this.log = '';
 		this.frameCount = 0;
+
+		webmidi.enable((err) => {
+			if (err) {
+				throw Error('Error initializing midi');
+			}
+			this.inputs = webmidi.inputs;
+			this.outputs = webmidi.outputs;
+			this.activeOutput = this.outputs[0] ? this.outputs[0] : undefined;
+			this.activeInput = this.inputs[0] ? this.inputs[0] : undefined;
+		});
 	}
 
 	async init() {
@@ -98,16 +108,16 @@ export class MidiTcPlayer {
 		let nextAt = intervalTime + Date.now();
 
 		this.playerStart = window.performance.now();
-		let hourbyte = (this.time.time.h + (this.rate << 1)) & 0x06;
+		let hourbyte = (this.time.h + (this.rate << 1)) & 0x06;
 		this.activeOutput.send(0xf0, [
 			0x7f,
 			0x7f,
 			0x01,
 			0x01,
 			hourbyte,
-			this.time.time.m,
-			this.time.time.s,
-			this.time.time.f,
+			this.time.m,
+			this.time.s,
+			this.time.f,
 			0xf7,
 		]);
 
@@ -195,14 +205,6 @@ export class MidiTcPlayer {
 		// console.log('base time: ', baseTime)
 		if (this.playerStart! + baseTime - window.performance.now() < 0) {
 			//we're trying to schedule too late.
-			console.log(
-				'Missed the window: ',
-				baseTime,
-				'\tdesired:',
-				this.playerStart! + baseTime,
-				'\tactual',
-				window.performance.now()
-			);
 		}
 
 		for (let i = 0; i < dataBytes.length; i++) {
@@ -225,29 +227,29 @@ export class MidiTcPlayer {
 			console.error('there is no active midi output');
 			return;
 		}
-		let hourbyte = (this.time.time.h + (this.time.rate << 1)) & 0x06;
+		let hourbyte = (this.time.h + (this.rate << 1)) & 0x06;
 		this.activeOutput.send(0xf0, [
 			0x7f,
 			0x7f,
 			0x01,
 			0x01,
 			hourbyte,
-			this.time.time.m,
-			this.time.time.s,
-			this.time.time.f,
+			this.time.m,
+			this.time.s,
+			this.time.f,
 			0xf7,
 		]);
 		let last = window.performance.now();
 		let index = 0;
-		var self = this;
+
 		this.playerTimeout = setInterval(() => {
 			console.log('oldtimer');
 			var dataByte = 0;
-			dataByte += self.quarterFrameCounter << 4;
-			const t = self.time.time;
-			if (self.quarterFrameCounter === 0) {
-				self.time.advanceFrame();
-				self.timeStringSrc.next(self.time.str);
+			dataByte += this.quarterFrameCounter << 4;
+			const t = this.time;
+			if (this.quarterFrameCounter === 0) {
+				this.time.advanceFrame();
+				this.timeStringSrc.next(this.time.str);
 
 				dataByte += t.f & 0x0f;
 			} else if (self.quarterFrameCounter === 1) {
