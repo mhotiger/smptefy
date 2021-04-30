@@ -70,12 +70,16 @@ class MidiTcPlayer {
 	setInput(i: number) {
 		if (i < webmidi.inputs.length) {
 			this.activeInput = i;
+		} else {
+			throw new Error('Invalid input selection');
 		}
 	}
 
 	setOutput(i: number) {
 		if (i < webmidi.outputs.length) {
 			this.activeOutput = i;
+		} else {
+			throw new Error('Invalid output selection');
 		}
 	}
 
@@ -212,6 +216,13 @@ class MidiTcPlayer {
 		}
 
 		this._frameCounter += 2;
+	}
+
+	pause() {
+		if (this.playerTimeout && this.isPlaying) {
+			clearTimeout(this.playerTimeout);
+			this.isPlaying = false;
+		}
 	}
 
 	//Returns the next frame of TC after the prop frame
