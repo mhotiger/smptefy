@@ -42,7 +42,7 @@ class MidiTcPlayer {
 	outputs$ = this.outputSub.asObservable();
 	time$ = this.timeSub.asObservable();
 
-	isPlaying: boolean;
+	paused: boolean;
 	playerTimeout?: NodeJS.Timeout;
 
 	constructor() {
@@ -50,7 +50,7 @@ class MidiTcPlayer {
 		this.offset = TCZeroTime;
 		this.framerate = fps30;
 
-		this.isPlaying = false;
+		this.paused = true;
 
 		webmidi.enable((err) => {
 			if (err) {
@@ -111,14 +111,18 @@ class MidiTcPlayer {
 	}
 
 	play() {
-		if (this.isPlaying) {
+		if (!this.paused) {
 			console.error('There is already a TC slot playing');
 			throw new Error('There is already a TC slot playing');
 		} else if (!this.activeOutput) {
 			throw new Error('There is no active Midi output');
 		}
 
-		this.isPlaying = true;
+		if (this.playerTimeout) {
+			clearTimeout(this.playerTimeout);
+		}
+
+		this.paused = false;
 		//send midi TC start code.
 		let hourbyte = (this._time.h + (this.framerate << 1)) & 0x06;
 		webmidi.outputs[this.activeOutput].send(0xf0, [
@@ -219,9 +223,9 @@ class MidiTcPlayer {
 	}
 
 	pause() {
-		if (this.playerTimeout && this.isPlaying) {
+		if (this.playerTimeout && !this.paused) {
 			clearTimeout(this.playerTimeout);
-			this.isPlaying = false;
+			this.paused = true;
 		}
 	}
 

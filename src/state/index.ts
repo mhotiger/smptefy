@@ -26,7 +26,7 @@ const rootReducer = combineReducers({
 	playlist: playlistReducer,
 	tracks: tracksReducer,
 	errors: errorReducer,
-	midi: midiPlayerReducer,
+	// midi: midiPlayerReducer,
 	spotify: spotifyPlayerReducer,
 	offsets: trackOffsetReducer,
 	firebase: firebaseReducer,

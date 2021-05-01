@@ -22,6 +22,7 @@ import {
 } from 'state/MidiPlayer/actions';
 import { requestErrorStrategy, retryStrategy } from 'state/strategies';
 import { getAuthToken } from 'utils/auth';
+import { midiTcPlayer } from 'utils/Midi/midiTcPlayer';
 import {
 	setSpotifyPlaybackState,
 	spotifyPauseAction,
@@ -112,14 +113,22 @@ export const spotifyStateChangedEpic: Epic<
 					if (state) {
 						const timediff = Date.now() - state.timestamp;
 						// console.log("state from the interval", state)
+						midiTcPlayer.setTimeFromMs(state.position);
+						if (state.paused && !midiTcPlayer.paused) {
+							midiTcPlayer.pause();
+						} else if (!state.paused && midiTcPlayer.paused) {
+							midiTcPlayer.play();
+						}
+
 						return merge(
-							of(setSpotifyPlaybackState(state)),
-							of(setMidiPlayStateAction(!state.paused)),
-							of(setMidiClockMsAction(state.position))
+							of(setSpotifyPlaybackState(state))
+							// of(setMidiPlayStateAction(!state.paused)),
+							// of(setMidiClockMsAction(state.position))
 						);
 					} else {
+						midiTcPlayer.pause();
 						return merge(
-							of(pauseMidiAction()),
+							//of(pauseMidiAction()),
 							of(setSpotifyPlaybackState(action.playbackState))
 						);
 					}
