@@ -142,6 +142,7 @@ export const spotifyStateChangedEpic: Epic<
 					}
 				}),
 				catchError((err) => {
+					midiTcPlayer.pause();
 					return merge(
 						of(spotifyPauseAction()),
 						of(setError(err.message))
