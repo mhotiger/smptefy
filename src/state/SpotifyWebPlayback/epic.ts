@@ -50,15 +50,13 @@ export const spotifyPlayTrackEpic: Epic<
 	return action$.pipe(
 		filter((action) => action.type === SPOTIFY_PLAY_TRACK),
 		map((action) => action as SpotifyPlayTrackAction),
-		tap((action) => {
-			console.log('play track action: ', action);
-			if (!state$.value.spotify.isReady) {
-				throw new Error('Spotify Web Playback Not Ready');
-			}
-		}),
+
 		switchMap((action) => {
-			return defer(() =>
-				ajax({
+			return defer(() => {
+				if (!state$.value.spotify.isReady) {
+					throw new Error('Spotify Web Playback is not ready');
+				}
+				return ajax({
 					url: `https://api.spotify.com/v1/me/player/play?device_id=${state$.value.spotify.device_id}`,
 					method: 'PUT',
 					headers: {
@@ -66,17 +64,26 @@ export const spotifyPlayTrackEpic: Epic<
 						'Content-Type': 'application/json',
 					},
 					body: JSON.stringify({ uris: [action.trackUri] }),
-				})
-			).pipe(
+				});
+			}).pipe(
+				mergeMap((action) => {
+					return of(noopAction());
+				}),
 				retryWhen(retryStrategy()),
-				catchError(requestErrorStrategy())
+				catchError((err) => {
+					console.log('catch: ', err);
+					midiTcPlayer.pause();
+					return merge(
+						of(spotifyPauseAction()),
+						of(setError(err.message))
+					);
+				})
 			);
 		}),
-		mergeMap(() => {
-			midiTcPlayer.pause();
-			return of(noopAction());
-		}),
-		catchError(requestErrorStrategy())
+		mergeMap((action) => {
+			console.log('bottom mrerge: ', action);
+			return of(action);
+		})
 	);
 };
 
@@ -133,6 +140,12 @@ export const spotifyStateChangedEpic: Epic<
 							of(setSpotifyPlaybackState(action.playbackState))
 						);
 					}
+				}),
+				catchError((err) => {
+					return merge(
+						of(spotifyPauseAction()),
+						of(setError(err.message))
+					);
 				})
 			);
 		})

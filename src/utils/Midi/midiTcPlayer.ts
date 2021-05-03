@@ -147,6 +147,7 @@ class MidiTcPlayer {
 	play() {
 		console.log('Playing: active midi out: ', this.activeOutput);
 		console.log('outputs: ', webmidi.outputs);
+
 		if (!this.paused) {
 			console.error('There is already a TC slot playing');
 			throw new Error('There is already a TC slot playing');
@@ -159,11 +160,11 @@ class MidiTcPlayer {
 		}
 
 		console.log('Webmidi i/o: ', webmidi.inputs, '\n', webmidi.outputs);
-
+		// throw new Error('TEST ERROR');
 		this.paused = false;
 		//send midi TC start code.
 		let hourbyte = (this._time.h + (this.framerate << 1)) & 0x06;
-		webmidi.outputs[this.activeOutput].send(0xf0, [
+		webmidi.outputs[this.activeOutput!].send(0xf0, [
 			0x7f,
 			0x7f,
 			0x01,

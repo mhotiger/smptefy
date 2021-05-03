@@ -98,7 +98,7 @@ app.get('/redirect', (req, res) => {
 		httpOnly: true,
 		sameSite: 'lax',
 	});
-	const authorizeUrl = Spotify.createAuthorizeURL(OAUTH_SCOPES, state, true);
+	const authorizeUrl = Spotify.createAuthorizeURL(OAUTH_SCOPES, state);
 	res.redirect(authorizeUrl);
 });
 

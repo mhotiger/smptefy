@@ -14,6 +14,7 @@ import { Loading } from 'containers/Loading';
 import { AuthComponent } from 'components/Auth';
 import { PrivateRoute } from 'components/PrivateRoute';
 import { midiTcPlayer } from 'utils/Midi/midiTcPlayer';
+import ErrorBoundary from 'components/common/ErrorBoundary';
 
 export const App = () => {
 	const firebase = useFirebase();
@@ -28,21 +29,23 @@ export const App = () => {
 
 	return (
 		<>
-			<BrowserRouter>
-				<Switch>
-					<Route
-						path='/loginauth'
-						exact
-						component={AuthComponent}></Route>
-					<Route path='/login' exact>
-						<Login />
-					</Route>
-					<PrivateRoute path='/'>
-						<Layout />
-					</PrivateRoute>
-				</Switch>
-			</BrowserRouter>
-			<ErrorMessages />
+			<ErrorBoundary>
+				<BrowserRouter>
+					<Switch>
+						<Route
+							path='/loginauth'
+							exact
+							component={AuthComponent}></Route>
+						<Route path='/login' exact>
+							<Login />
+						</Route>
+						<PrivateRoute path='/'>
+							<Layout />
+						</PrivateRoute>
+					</Switch>
+				</BrowserRouter>
+				<ErrorMessages />
+			</ErrorBoundary>
 		</>
 	);
 };
