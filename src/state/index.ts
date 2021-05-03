@@ -12,9 +12,7 @@ import { TrackAction } from './Tracks/types';
 import { ErrorAction } from './Error/types';
 import { trackEpic } from './Tracks/epic';
 import { errorReducer } from './Error/reducer';
-import { MidiAction } from './MidiPlayer/types';
-import { midiPlayerReducer } from './MidiPlayer/reducer';
-import { midiPlayerEpic } from './MidiPlayer/epic';
+
 import { spotifyPlayerReducer } from './SpotifyWebPlayback/reducer';
 import { SpotifyPlayerAction } from './SpotifyWebPlayback/types';
 import { spotifyEpic } from './SpotifyWebPlayback/epic';
@@ -52,7 +50,6 @@ export type AllActions =
 	| PlaylistAction
 	| TrackAction
 	| ErrorAction
-	| MidiAction
 	| SpotifyPlayerAction
 	| NoopAction
 	| GenericAction;
@@ -68,7 +65,7 @@ const rootEpic = combineEpics(
 	userEpic,
 	playlistEpic,
 	trackEpic,
-	midiPlayerEpic,
+
 	spotifyEpic
 );
 

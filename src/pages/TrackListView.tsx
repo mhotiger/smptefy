@@ -39,7 +39,7 @@ export const TrackListView: React.FC<TrackListViewProps> = () => {
 				if (state.loading) {
 					return <Loading />;
 				} else if (state.data) {
-					console.log('State track data: ', state.data);
+					// console.log('State track data: ', state.data);
 					const tracks = state.data.items.map(
 						(t: SpotifyApi.PlaylistTrackObject) => t.track
 					);

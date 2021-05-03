@@ -12,32 +12,33 @@ import {
 	Select,
 	Text,
 } from '@chakra-ui/react';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from 'state';
 import { setError } from 'state/Error/action';
-import {
-	setMidiFramerateAction,
-	setMidiInputAction,
-	setMidiOutputAction,
-} from 'state/MidiPlayer/actions';
-import { TCSpeeds } from 'utils/Midi/midiPlayer';
+
+import { TCSpeeds, midiTcPlayer } from 'utils/Midi/midiTcPlayer';
 import { TCFramerate } from 'utils/Midi/types';
+import { Input, Output } from 'webmidi';
 
 interface MidiSettingsPanelProps {}
 
 export const MidiSettingsPanel: React.FC<MidiSettingsPanelProps> = ({}) => {
-	const inputs = useSelector((state: RootState) => state.midi.player.inputs);
-	const outputs = useSelector(
-		(state: RootState) => state.midi.player.outputs
-	);
-	const inputIndex = useSelector(
-		(state: RootState) => state.midi.player.activeInputIndex
-	);
-	const outputIndex = useSelector(
-		(state: RootState) => state.midi.player.activeOutputIndex
-	);
-	const framerate = useSelector((state: RootState) => state.midi.player.rate);
+	// const inputs = useSelector((state: RootState) => state.midi.player.inputs);
+	// const outputs = useSelector(
+	// 	(state: RootState) => state.midi.player.outputs
+	// );
+	// const inputIndex = useSelector(
+	// 	(state: RootState) => state.midi.player.activeInputIndex
+	// );
+	// const outputIndex = useSelector(
+	// 	(state: RootState) => state.midi.player.activeOutputIndex
+	// );
+	// const framerate = useSelector((state: RootState) => state.midi.player.rate);
+	const [inputs, setInputs] = useState<Input[]>([]);
+	const [outputs, setOutputs] = useState<Output[]>([]);
+	const [activeInput, setActiveInput] = useState<number | undefined>();
+	const [activeOutput, setActiveOutput] = useState<number | undefined>();
 
 	const inputItems = inputs.map((input, i) => {
 		return (
@@ -62,20 +63,47 @@ export const MidiSettingsPanel: React.FC<MidiSettingsPanelProps> = ({}) => {
 		);
 	});
 
+	useEffect(() => {
+		const inputSub = midiTcPlayer.inputs$.subscribe((inputs) => {
+			setInputs(inputs);
+		});
+		const outputSub = midiTcPlayer.outputs$.subscribe((outputs) => {
+			setOutputs(outputs);
+		});
+		const activeInputSub = midiTcPlayer.activeInput$.subscribe((input) => {
+			setActiveInput(input);
+		});
+
+		const activeOutputSub = midiTcPlayer.activeOutput$.subscribe(
+			(output) => {
+				setActiveOutput(output);
+			}
+		);
+
+		return () => {
+			inputSub.unsubscribe();
+			outputSub.unsubscribe();
+			activeInputSub.unsubscribe();
+			activeOutputSub.unsubscribe();
+		};
+	});
+
 	const dispatch = useDispatch();
 
 	const handleInputChange: React.ChangeEventHandler<HTMLSelectElement> = (
 		e
 	) => {
 		console.log('input change: ', e.target.value);
-		dispatch(setMidiInputAction(parseInt(e.target.value)));
+		midiTcPlayer.setInput(parseInt(e.target.value));
+		// dispatch(setMidiInputAction(parseInt(e.target.value)));
 	};
 
 	const handleOutputChange: React.ChangeEventHandler<HTMLSelectElement> = (
 		e
 	) => {
 		console.log('outputChange: ', e.target.value);
-		dispatch(setMidiOutputAction(parseInt(e.target.value)));
+		midiTcPlayer.setOutput(parseInt(e.target.value));
+		// dispatch(setMidiOutputAction(parseInt(e.target.value)));
 	};
 
 	const handleFramerateChange: React.ChangeEventHandler<HTMLSelectElement> = (
@@ -88,10 +116,10 @@ export const MidiSettingsPanel: React.FC<MidiSettingsPanelProps> = ({}) => {
 				dispatch(
 					setError('29.97fps Timecode is currently not supported')
 				);
-				e.target.value = framerate.toString();
+				e.target.value = midiTcPlayer.framerate.toString();
 				return;
 			}
-			dispatch(setMidiFramerateAction(rate as TCFramerate));
+			midiTcPlayer.setFramerate(rate as TCFramerate);
 		}
 	};
 
@@ -117,7 +145,7 @@ export const MidiSettingsPanel: React.FC<MidiSettingsPanelProps> = ({}) => {
 								size='sm'
 								m='0.2rem'
 								onChange={handleInputChange}
-								defaultValue={inputIndex}>
+								defaultValue={activeInput}>
 								{inputItems}
 							</Select>
 						</GridItem>
@@ -136,7 +164,7 @@ export const MidiSettingsPanel: React.FC<MidiSettingsPanelProps> = ({}) => {
 								size='sm'
 								m='0.2rem'
 								onChange={handleOutputChange}
-								defaultValue={outputIndex}>
+								defaultValue={activeOutput}>
 								{outputItems}
 							</Select>
 						</GridItem>
@@ -154,7 +182,7 @@ export const MidiSettingsPanel: React.FC<MidiSettingsPanelProps> = ({}) => {
 							<Select
 								m='0.2rem'
 								size='sm'
-								defaultValue={framerate}
+								defaultValue={midiTcPlayer.framerate}
 								onChange={handleFramerateChange}>
 								{framerateItems}
 							</Select>

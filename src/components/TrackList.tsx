@@ -4,12 +4,13 @@ import React, { useEffect } from 'react';
 import { FiChevronRight } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from 'state';
-import { setMidiClockAction } from 'state/MidiPlayer/actions';
 import { setTrackOffsetsAction } from 'state/Offsets/actions';
 import { TrackOffsetState } from 'state/Offsets/types';
 import { spotifyPlayTrackAction } from 'state/SpotifyWebPlayback/actions';
 import { TCOffsetField } from './TCOffsetField';
 import _ from 'lodash';
+import { midiTcPlayer } from 'utils/Midi/midiTcPlayer';
+import { TCZeroTime } from 'utils/Midi/types';
 
 interface TrackListProps {
 	tracks: SpotifyApi.TrackObjectFull[];
@@ -33,9 +34,9 @@ const TrackList: React.FC<TrackListProps> = ({ tracks }) => {
 
 	const handlePlay = (uri: string, id: string) => {
 		if (offsets[`${id}`]) {
-			dispatch(setMidiClockAction(offsets[`$id`]));
+			midiTcPlayer.setOffset(offsets[`${id}`]);
 		} else {
-			dispatch(setMidiClockAction({ h: 0, m: 0, s: 0, f: 0 }));
+			midiTcPlayer.setOffset(TCZeroTime);
 		}
 		dispatch(spotifyPlayTrackAction(uri));
 	};

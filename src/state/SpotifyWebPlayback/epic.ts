@@ -15,11 +15,11 @@ import {
 } from 'rxjs/operators';
 import { AllActions, noopAction, RootState } from 'state';
 import { setError } from 'state/Error/action';
-import {
-	pauseMidiAction,
-	setMidiClockMsAction,
-	setMidiPlayStateAction,
-} from 'state/MidiPlayer/actions';
+// import {
+// 	pauseMidiAction,
+// 	setMidiClockMsAction,
+// 	setMidiPlayStateAction,
+// } from 'state/MidiPlayer/actions';
 import { requestErrorStrategy, retryStrategy } from 'state/strategies';
 import { getAuthToken } from 'utils/auth';
 import { midiTcPlayer } from 'utils/Midi/midiTcPlayer';
@@ -73,7 +73,8 @@ export const spotifyPlayTrackEpic: Epic<
 			);
 		}),
 		mergeMap(() => {
-			return merge(of(pauseMidiAction()));
+			midiTcPlayer.pause();
+			return of(noopAction());
 		}),
 		catchError(requestErrorStrategy())
 	);
@@ -98,13 +99,11 @@ export const spotifyStateChangedEpic: Epic<
 		switchMap((action) => {
 			// state$.value.spotify.playbackPos$.next(action.playbackState.position)
 			if (action.playbackState.paused) {
-				return merge(
-					of(pauseMidiAction()),
-					of(setSpotifyPlaybackState(action.playbackState))
-				);
+				midiTcPlayer.pause();
+				return merge(of(setSpotifyPlaybackState(action.playbackState)));
 			}
 			//const playbackPos = action.playbackState.position +(Date.now()-action.playbackState.timestamp)
-			return interval(100).pipe(
+			return interval(300).pipe(
 				switchMap(async () => {
 					const playbackState = await state$.value.spotify.player!.getCurrentState();
 					return { ...playbackState } as PlaybackState;
@@ -113,6 +112,8 @@ export const spotifyStateChangedEpic: Epic<
 					if (state) {
 						const timediff = Date.now() - state.timestamp;
 						// console.log("state from the interval", state)
+						// console.log('Midi player: ', midiTcPlayer);
+
 						midiTcPlayer.setTimeFromMs(state.position);
 						if (state.paused && !midiTcPlayer.paused) {
 							midiTcPlayer.pause();
@@ -151,7 +152,6 @@ const spotifyPlayPauseEpic: Epic<AllActions, AllActions, RootState, void> = (
 			);
 		}),
 		map((action) => {
-			console.log('spotfy playpause epic');
 			const spotify = state$.value.spotify;
 			switch (action.type) {
 				case SPOTIFY_PLAY:

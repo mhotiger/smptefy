@@ -1,4 +1,4 @@
-import { Subject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import webmidi from 'webmidi';
 import { Input, Output } from 'webmidi';
 import { fps25, fps30, TCFramerate, TCtime, TCZeroTime } from './types';
@@ -34,13 +34,17 @@ class MidiTcPlayer {
 	activeInput?: number;
 	activeOutput?: number;
 
-	inputSub = new Subject<Input[]>();
-	outputSub = new Subject<Output[]>();
-	timeSub = new Subject<TCtime>();
+	inputSub = new BehaviorSubject<Input[]>([]);
+	outputSub = new BehaviorSubject<Output[]>([]);
+	timeSub = new BehaviorSubject<TCtime>(TCZeroTime);
+	activeInputSub = new BehaviorSubject<number | undefined>(undefined);
+	activeOutputSub = new BehaviorSubject<number | undefined>(undefined);
 
 	inputs$ = this.inputSub.asObservable();
 	outputs$ = this.outputSub.asObservable();
 	time$ = this.timeSub.asObservable();
+	activeInput$ = this.activeInputSub.asObservable();
+	activeOutput$ = this.activeOutputSub.asObservable();
 
 	paused: boolean;
 	playerTimeout?: NodeJS.Timeout;
@@ -61,8 +65,12 @@ class MidiTcPlayer {
 
 			this.inputSub.next(webmidi.inputs);
 			this.outputSub.next(webmidi.outputs);
-			this.activeInput = webmidi.inputs[0] ? 0 : undefined;
-			this.activeOutput = webmidi.outputs[0] ? 0 : undefined;
+			if (webmidi.inputs.length > 0) {
+				this.setInput(0);
+			}
+			if (webmidi.outputs.length > 0) {
+				this.setOutput(0);
+			}
 			this.connectListen();
 		}, true);
 	}
@@ -70,6 +78,12 @@ class MidiTcPlayer {
 	setInput(i: number) {
 		if (i < webmidi.inputs.length) {
 			this.activeInput = i;
+			console.log(
+				'midiPlayer: Input ',
+				this.activeInput,
+				webmidi.inputs[this.activeInput]
+			);
+			this.activeInputSub.next(this.activeInput);
 		} else {
 			throw new Error('Invalid input selection');
 		}
@@ -78,9 +92,20 @@ class MidiTcPlayer {
 	setOutput(i: number) {
 		if (i < webmidi.outputs.length) {
 			this.activeOutput = i;
+			console.log(
+				'midiPlayer: Output ',
+				this.activeOutput,
+				'\t',
+				webmidi.outputs[this.activeOutput]
+			);
+			this.activeOutputSub.next(this.activeOutput);
 		} else {
 			throw new Error('Invalid output selection');
 		}
+	}
+
+	setFramerate(r: TCFramerate) {
+		this.framerate = r;
 	}
 
 	setOffset(t: TCtime) {
@@ -91,36 +116,49 @@ class MidiTcPlayer {
 		webmidi.addListener('connected', (e) => {
 			this.inputSub.next(webmidi.inputs);
 			this.outputSub.next(webmidi.outputs);
+			if (this.activeInput === undefined) {
+				this.setInput(webmidi.inputs.length - 1);
+			}
+			if (!this.activeOutput === undefined) {
+				this.setOutput(webmidi.outputs.length - 1);
+			}
 			console.log('New Midi Device Connected');
 		});
 
 		webmidi.addListener('disconnected', (e) => {
 			this.inputSub.next(webmidi.inputs);
 			this.outputSub.next(webmidi.outputs);
+			//our input is out of range
 			if (this.activeInput && this.activeInput > webmidi.inputs.length) {
-				this.activeInput = webmidi.inputs.length;
+				this.setInput(webmidi.inputs.length - 1);
 			}
+
+			//output is out of range
 			if (
 				this.activeOutput &&
 				this.activeOutput > webmidi.outputs.length
 			) {
-				this.activeOutput = webmidi.outputs.length;
+				this.setOutput(webmidi.outputs.length - 1);
 			}
 			console.log('Midi Device Disconnected');
 		});
 	}
 
 	play() {
+		console.log('Playing: active midi out: ', this.activeOutput);
+		console.log('outputs: ', webmidi.outputs);
 		if (!this.paused) {
 			console.error('There is already a TC slot playing');
 			throw new Error('There is already a TC slot playing');
-		} else if (!this.activeOutput) {
+		} else if (this.activeOutput === undefined) {
 			throw new Error('There is no active Midi output');
 		}
 
 		if (this.playerTimeout) {
 			clearTimeout(this.playerTimeout);
 		}
+
+		console.log('Webmidi i/o: ', webmidi.inputs, '\n', webmidi.outputs);
 
 		this.paused = false;
 		//send midi TC start code.

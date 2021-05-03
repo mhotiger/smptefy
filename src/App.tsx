@@ -7,13 +7,13 @@ import { fetchUser } from 'state/User/action';
 import Layout from 'components/Layout';
 import Login from 'components/Login';
 import { ErrorMessages } from 'components/ErrorMessages';
-import { initMidiAction } from 'state/MidiPlayer/actions';
 import { setSpotifyReadyAction } from 'state/SpotifyWebPlayback/actions';
 import { isLoaded, useFirebase, isEmpty } from 'react-redux-firebase';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import { Loading } from 'containers/Loading';
 import { AuthComponent } from 'components/Auth';
 import { PrivateRoute } from 'components/PrivateRoute';
+import { midiTcPlayer } from 'utils/Midi/midiTcPlayer';
 
 export const App = () => {
 	const firebase = useFirebase();
@@ -25,10 +25,6 @@ export const App = () => {
 		console.log('spotify ready');
 		dispatch(setSpotifyReadyAction(true));
 	};
-
-	React.useEffect(() => {
-		dispatch(initMidiAction());
-	}, [dispatch]);
 
 	return (
 		<>
