@@ -17,8 +17,9 @@ import {
 	spotifyPlaybackReadyAction,
 	spotifyStateChangedAction,
 } from './actions';
-import { playMidiAction } from 'state/MidiPlayer/actions';
+// import { playMidiAction } from 'state/MidiPlayer/actions';
 import { BehaviorSubject, Subject } from 'rxjs';
+import { midiTcPlayer } from 'utils/Midi/midiTcPlayer';
 
 const initialState: SpotifyPlayerState = {
 	isReadyToInit: false,

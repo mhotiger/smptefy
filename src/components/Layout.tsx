@@ -76,10 +76,6 @@ export const Layout: React.FC<LayoutProps> = () => {
 										if (state.loading) {
 											return <Loading />;
 										} else if (state.data?.items) {
-											console.log(
-												'state data: ',
-												state.data
-											);
 											return (
 												<PlaylistView
 													playlistItems={
@@ -89,7 +85,11 @@ export const Layout: React.FC<LayoutProps> = () => {
 												/>
 											);
 										} else {
-											return <Text>Nothing</Text>;
+											return (
+												<Text>
+													Error Loading Component
+												</Text>
+											);
 										}
 									}}></SpotifyLoader>
 							</ErrorBoundary>

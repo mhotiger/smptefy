@@ -1,30 +1,25 @@
-import { Box, Text} from '@chakra-ui/react'
-import React, { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
-import { RootState } from 'state'
+import { Box, Text } from '@chakra-ui/react';
+import React, { useEffect, useState } from 'react';
+import { midiTcPlayer, timeToString } from 'utils/Midi/midiTcPlayer';
 
-interface TimecodeClockProps {
-
-}
+interface TimecodeClockProps {}
 
 export const TimecodeClock: React.FC<TimecodeClockProps> = () => {
-    
-    const [time, setTime] = useState<string>()
-    const timeStr$ = useSelector((state: RootState)=>state.midi.player.timeString$)
+	const [time, setTime] = useState<string>();
 
-    useEffect(()=>{
-        const sub = timeStr$.subscribe((time)=>{
-            setTime(time);
-        })
+	useEffect(() => {
+		const sub = midiTcPlayer.time$.subscribe((time) => {
+			setTime(timeToString(time));
+		});
 
-        return ()=>{
-            sub.unsubscribe();
-        }
-    })
+		return () => {
+			sub.unsubscribe();
+		};
+	});
 
-    return (
-        <Box>
-            <Text fontFamily='mono'>{time}</Text>
-        </Box>
-    )
-}
+	return (
+		<Box>
+			<Text fontFamily='mono'>{time}</Text>
+		</Box>
+	);
+};

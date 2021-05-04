@@ -15,13 +15,14 @@ import {
 } from 'rxjs/operators';
 import { AllActions, noopAction, RootState } from 'state';
 import { setError } from 'state/Error/action';
-import {
-	pauseMidiAction,
-	setMidiClockMsAction,
-	setMidiPlayStateAction,
-} from 'state/MidiPlayer/actions';
+// import {
+// 	pauseMidiAction,
+// 	setMidiClockMsAction,
+// 	setMidiPlayStateAction,
+// } from 'state/MidiPlayer/actions';
 import { requestErrorStrategy, retryStrategy } from 'state/strategies';
 import { getAuthToken } from 'utils/auth';
+import { midiTcPlayer } from 'utils/Midi/midiTcPlayer';
 import {
 	setSpotifyPlaybackState,
 	spotifyPauseAction,
@@ -49,15 +50,13 @@ export const spotifyPlayTrackEpic: Epic<
 	return action$.pipe(
 		filter((action) => action.type === SPOTIFY_PLAY_TRACK),
 		map((action) => action as SpotifyPlayTrackAction),
-		tap((action) => {
-			console.log('play track action: ', action);
-			if (!state$.value.spotify.isReady) {
-				throw new Error('Spotify Web Playback Not Ready');
-			}
-		}),
+
 		switchMap((action) => {
-			return defer(() =>
-				ajax({
+			return defer(() => {
+				if (!state$.value.spotify.isReady) {
+					throw new Error('Spotify Web Playback is not ready');
+				}
+				return ajax({
 					url: `https://api.spotify.com/v1/me/player/play?device_id=${state$.value.spotify.device_id}`,
 					method: 'PUT',
 					headers: {
@@ -65,16 +64,26 @@ export const spotifyPlayTrackEpic: Epic<
 						'Content-Type': 'application/json',
 					},
 					body: JSON.stringify({ uris: [action.trackUri] }),
-				})
-			).pipe(
+				});
+			}).pipe(
+				mergeMap((action) => {
+					return of(noopAction());
+				}),
 				retryWhen(retryStrategy()),
-				catchError(requestErrorStrategy())
+				catchError((err) => {
+					console.log('catch: ', err);
+					midiTcPlayer.pause();
+					return merge(
+						of(spotifyPauseAction()),
+						of(setError(err.message))
+					);
+				})
 			);
 		}),
-		mergeMap(() => {
-			return merge(of(pauseMidiAction()));
-		}),
-		catchError(requestErrorStrategy())
+		mergeMap((action) => {
+			console.log('bottom mrerge: ', action);
+			return of(action);
+		})
 	);
 };
 
@@ -97,13 +106,11 @@ export const spotifyStateChangedEpic: Epic<
 		switchMap((action) => {
 			// state$.value.spotify.playbackPos$.next(action.playbackState.position)
 			if (action.playbackState.paused) {
-				return merge(
-					of(pauseMidiAction()),
-					of(setSpotifyPlaybackState(action.playbackState))
-				);
+				midiTcPlayer.pause();
+				return merge(of(setSpotifyPlaybackState(action.playbackState)));
 			}
 			//const playbackPos = action.playbackState.position +(Date.now()-action.playbackState.timestamp)
-			return interval(100).pipe(
+			return interval(300).pipe(
 				switchMap(async () => {
 					const playbackState = await state$.value.spotify.player!.getCurrentState();
 					return { ...playbackState } as PlaybackState;
@@ -112,17 +119,34 @@ export const spotifyStateChangedEpic: Epic<
 					if (state) {
 						const timediff = Date.now() - state.timestamp;
 						// console.log("state from the interval", state)
+						// console.log('Midi player: ', midiTcPlayer);
+
+						midiTcPlayer.setTimeFromMs(state.position);
+						if (state.paused && !midiTcPlayer.paused) {
+							midiTcPlayer.pause();
+						} else if (!state.paused && midiTcPlayer.paused) {
+							midiTcPlayer.play();
+						}
+
 						return merge(
-							of(setSpotifyPlaybackState(state)),
-							of(setMidiPlayStateAction(!state.paused)),
-							of(setMidiClockMsAction(state.position))
+							of(setSpotifyPlaybackState(state))
+							// of(setMidiPlayStateAction(!state.paused)),
+							// of(setMidiClockMsAction(state.position))
 						);
 					} else {
+						midiTcPlayer.pause();
 						return merge(
-							of(pauseMidiAction()),
+							//of(pauseMidiAction()),
 							of(setSpotifyPlaybackState(action.playbackState))
 						);
 					}
+				}),
+				catchError((err) => {
+					midiTcPlayer.pause();
+					return merge(
+						of(spotifyPauseAction()),
+						of(setError(err.message))
+					);
 				})
 			);
 		})
@@ -142,7 +166,6 @@ const spotifyPlayPauseEpic: Epic<AllActions, AllActions, RootState, void> = (
 			);
 		}),
 		map((action) => {
-			console.log('spotfy playpause epic');
 			const spotify = state$.value.spotify;
 			switch (action.type) {
 				case SPOTIFY_PLAY:
