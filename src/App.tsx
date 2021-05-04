@@ -7,7 +7,10 @@ import { fetchUser } from 'state/User/action';
 import Layout from 'components/Layout';
 import Login from 'components/Login';
 import { ErrorMessages } from 'components/ErrorMessages';
-import { setSpotifyReadyAction } from 'state/SpotifyWebPlayback/actions';
+import {
+	setSpotifyReadyAction,
+	spotifyPauseAction,
+} from 'state/SpotifyWebPlayback/actions';
 import { isLoaded, useFirebase, isEmpty } from 'react-redux-firebase';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import { Loading } from 'containers/Loading';
@@ -15,12 +18,15 @@ import { AuthComponent } from 'components/Auth';
 import { PrivateRoute } from 'components/PrivateRoute';
 import { midiTcPlayer } from 'utils/Midi/midiTcPlayer';
 import ErrorBoundary from 'components/common/ErrorBoundary';
+import { useKeyboardShortcuts } from 'utils/shortcuts/useKeyboardShortcuts';
 
 export const App = () => {
 	const firebase = useFirebase();
 
 	const auth = useSelector((state: RootState) => state.firebase.auth);
 	const dispatch = useDispatch();
+
+	useKeyboardShortcuts(['shift', 'j'], () => dispatch(spotifyPauseAction()));
 
 	window.onSpotifyWebPlaybackSDKReady = () => {
 		console.log('spotify ready');
